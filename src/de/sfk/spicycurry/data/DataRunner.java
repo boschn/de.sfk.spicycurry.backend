@@ -61,10 +61,15 @@ public class DataRunner {
 				logger.info(FeatureStore.db.count() + " features loaded from polarion");
 			}
 			
-			// RequirementStore.db.loadAllPolarion(); /* "1010-MIB3-ALG-57871" */
-			// logger.info(RequirementStore.db.count() + " requirements loaded from polarion");
+			if (RequirementStore.db.has("1010-MIB3-ALG-57871")){ 
+					RequirementStore.db.loadPolarion("1010-MIB3-ALG-57871");
+					logger.info("1010-MIB3-ALG-57871 loaded from polarion");
+			}
+			
+			logger.info(RequirementStore.db.count() + " requirements loaded from polarion");
 			
 			Feature[] theFeatures=FeatureStore.db.all().toArray(new Feature[FeatureStore.db.all().size()]);
+			
 			// travel through the tree
 			theFeatures[30].accept(new FeatureLiveVisitor());
 			

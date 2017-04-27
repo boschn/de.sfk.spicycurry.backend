@@ -278,15 +278,15 @@ public class RequirementStore implements Closeable {
 			try {
 
 				long i =0;
-				
-				TypedQuery<Requirement> aQueryRequirement =
-						(TypedQuery<Requirement>) persistor.getEm().createNativeQuery("select r from Requirement r", Requirement.class);
-			        List<Requirement> theRequirementResults = aQueryRequirement.getResultList();
-			        for (Requirement r : theRequirementResults) {
+				Query aQueryRequirement =
+						persistor.getEm().createQuery("select r from Requirement r");
+				@SuppressWarnings("unchecked")
+				List<Requirement> theRequirementResults = aQueryRequirement.getResultList();
+			    for (Requirement r : theRequirementResults) {
 			        	this.add(r, false);
 			        	i++;
 			        	if (i % 1000 == 0) System.out.print(".");
-			        }
+			    }
 			     System.out.println();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block

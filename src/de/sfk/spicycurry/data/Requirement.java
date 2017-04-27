@@ -21,7 +21,7 @@ import org.eclipse.persistence.annotations.PrimaryKey;
 
 
 @Entity(name="Requirement")
-@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy=InheritanceType.JOINED)
 public class Requirement implements Visited ,Serializable{
 
 	@Transient
@@ -310,7 +310,7 @@ public class Requirement implements Visited ,Serializable{
 	/**
 	 * @return Collection of Requirements - lazy load from Requirementsstore
 	 */
-	public Collection<Requirement> getLoadRequirements() {
+	public Collection<Requirement> loadRequirements() {
 		if (subRequirements == null){ 
 			RequirementStore.db.loadPolarionSubRequirements(this, null);
 		}

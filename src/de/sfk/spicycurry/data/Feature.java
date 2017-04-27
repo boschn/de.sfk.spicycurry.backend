@@ -16,7 +16,10 @@ import javax.persistence.*;
 public class Feature extends Requirement implements Serializable{
 
 	@Transient
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
+	
+	@Column(nullable=true, length = 1024)
+	private String jiraLink = "";
 	
 	/**
 	 * constructor
@@ -52,5 +55,17 @@ public class Feature extends Requirement implements Serializable{
 	@Basic
 	public boolean isFeature() {
 		return true;
+	}
+	/**
+	 * @return the jiraLink
+	 */
+	public String getJiraLink() {
+		return jiraLink;
+	}
+	/**
+	 * @param jiraLink the jiraLink to set
+	 */
+	public void setJiraLink(String jiraLink) {
+		this.jiraLink = jiraLink;
 	}
 }
