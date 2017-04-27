@@ -23,8 +23,8 @@ import java.util.Locale;
 
 import javax.xml.rpc.ServiceException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.polarion.alm.ws.client.WebServiceFactory;
 import com.polarion.alm.ws.client.session.SessionWebService;
@@ -68,7 +68,7 @@ public class WorkItemPolarionLoader implements Closeable {
 		private static SimpleDateFormat isoTimePointFormatter = new SimpleDateFormat(ISO_TIMEPOINT_FORMAT);
 		
 		// Logger
-		private Log log = LogFactory.getLog(WorkItemPolarionLoader.class);
+		private Logger logger = LogManager.getLogger(WorkItemPolarionLoader.class);
 		/**
 		 * constructor with no beginSession
 		 */
@@ -98,19 +98,19 @@ public class WorkItemPolarionLoader implements Closeable {
 				
 				sessionService.logIn(name, password);
 				this.isInitialized = true;
-				log.info("Session with '" + url + "started");
+				logger.info("Session with '" + url + "started");
 			
 			} catch (MalformedURLException me) {
-				log.error("Provided URL is malformed - protocol unknown.", me);
+				logger.error("Provided URL is malformed - protocol unknown.", me);
 				throw me;
 			} catch (ServiceException se) {
-				log.error("Unreachable web services at Polarion server.", se);
+				logger.error("Unreachable web services at Polarion server.", se);
 				throw se;
 			} catch (RemoteException re) {
-				log.error("Log in unsuccessful", re);
+				logger.error("Log in unsuccessful", re);
 				throw re;
 			} catch (Exception ioe) {
-				log.error("Properties not loaded.", ioe);
+				logger.error("Properties not loaded.", ioe);
 				throw ioe;
 			}
 	    }
@@ -151,11 +151,11 @@ public class WorkItemPolarionLoader implements Closeable {
 				retry++;
 				
 				if (retry<3){
-					log.debug("Error ("+retry+") in getWorkItemsByQuery ["+e+"].", e);
+					logger.debug("Error ("+retry+") in getWorkItemsByQuery ["+e+"].", e);
 					return getWorkItemsByQuery(query, sort, retry);
 					
 				} else {
-					log.error("Error in getWorkItemsByQuery ["+e+"].", e);
+					logger.error("Error in getWorkItemsByQuery ["+e+"].", e);
 					e.printStackTrace();
 					throw e;
 				}
@@ -164,7 +164,7 @@ public class WorkItemPolarionLoader implements Closeable {
 			if (items==null)
 				items= new WorkItem[0];
 			
-			log.info("query '" + query + "' resulting " + items.length + " work items retrieved.");
+			logger.info("query '" + query + "' resulting " + items.length + " work items retrieved.");
 			return items;
 		}
 		/**
@@ -183,8 +183,8 @@ public class WorkItemPolarionLoader implements Closeable {
 				theUris = trackerService.queryWorkItemUris(query, sort);
 				
 			} catch (Exception e) {
-					log.error("Error in getWorkItemsByQuery ["+e+"].", e);
-					if (log.isDebugEnabled()){ 
+					logger.error("Error in getWorkItemsByQuery ["+e+"].", e);
+					if (logger.isDebugEnabled()){ 
 						e.printStackTrace();
 						throw e;
 					}
@@ -193,7 +193,7 @@ public class WorkItemPolarionLoader implements Closeable {
 			if (theUris==null)
 				theUris= new String[0];
 			
-			log.info("query '" + query + "' resulting " + theUris.length + " uris retrieved.");
+			logger.info("query '" + query + "' resulting " + theUris.length + " uris retrieved.");
 			return theUris;
 		}
 		/**
@@ -304,11 +304,11 @@ public class WorkItemPolarionLoader implements Closeable {
 				retry++;
 				
 				if (retry<3){
-					log.debug("Errore ("+retry+") nel isCustomField per il campo "+fieldName+" ["+e+"].");
+					logger.debug("Errore ("+retry+") nel isCustomField per il campo "+fieldName+" ["+e+"].");
 					return isCustomField(fieldName, workItem, retry);
 					
 				} else {
-					log.error("Errore nel isCustomField per il campo "+fieldName+" ["+e+"].");
+					logger.error("Errore nel isCustomField per il campo "+fieldName+" ["+e+"].");
 					e.printStackTrace();
 					throw e;
 				}
@@ -346,12 +346,12 @@ public class WorkItemPolarionLoader implements Closeable {
 				retry++;
 				
 				if (retry<3){
-					log.debug("Error ("+retry+") in getCustomField for field "+field+" ["+e+"].");
+					logger.debug("Error ("+retry+") in getCustomField for field "+field+" ["+e+"].");
 					return getCustomField( workItemUri, field, retry);
 					
 				} else {
-					log.error("Error in getCustomField for field "+field+" ["+e+"].");
-					if (log.isDebugEnabled()) {
+					logger.error("Error in getCustomField for field "+field+" ["+e+"].");
+					if (logger.isDebugEnabled()) {
 						e.printStackTrace();
 					}
 					throw e;
@@ -389,7 +389,7 @@ public class WorkItemPolarionLoader implements Closeable {
 				}
 			
 			} catch (Exception e) {
-				log.error("error in getting children of  ["+workItem.getId()+"]! " + e);
+				logger.error("error in getting children of  ["+workItem.getId()+"]! " + e);
 			}
 				
 			return children;
@@ -404,8 +404,8 @@ public class WorkItemPolarionLoader implements Closeable {
 			try {
 				type = workItem.getType().getId();
 			} catch (Exception e) {
-				log.info("unpossible to determine type of workitem ["+workItem.getId()+"]! ");
-				if (log.isDebugEnabled()) {
+				logger.info("unpossible to determine type of workitem ["+workItem.getId()+"]! ");
+				if (logger.isDebugEnabled()) {
 					e.printStackTrace();
 				}
 			}
@@ -439,7 +439,7 @@ public class WorkItemPolarionLoader implements Closeable {
 		    	}
 				
 			} catch (Exception e) {
-				log.error("error in getting father of  ["+workItem.getId()+"]! " + e);
+				logger.error("error in getting father of  ["+workItem.getId()+"]! " + e);
 			}
 			
 			return fathers;
@@ -453,91 +453,92 @@ public class WorkItemPolarionLoader implements Closeable {
 			try {
 				sessionService.endSession();
 			} catch (RemoteException e) {
-				if (log.isDebugEnabled()) e.printStackTrace();
+				if (logger.isDebugEnabled()) e.printStackTrace();
 			}
 		}
 		
 		/**
 		 * returns aRequirement from a item with the 
 		 * @param workItem
+		 * @param requirement of an existing requirment or null for new feature
 		 * @return a requirement object
 		 */
-		public Object convertToRequirement(WorkItem item, Requirement req){
+		public Object convertToRequirement(WorkItem item, Requirement requirement){
 		
-			if (req == null) req = new Requirement(item.getId());
+			if (requirement == null) requirement = new Requirement(item.getId());
 			
 			// get all Default fields
 			
-			if (item.getDescription() != null) req.setDescription(getSimpleValue(item.getDescription()));
-			else req.setDescription("");
+			if (item.getDescription() != null) requirement.setDescription(getSimpleValue(item.getDescription()));
+			else requirement.setDescription("");
 			
-			req.setTitle(item.getTitle());
-			req.setPolarionUri(item.getUri());
-			req.setCreatedOn(item.getCreated());
-			req.setUpdatedOn(item.getCreated());
-			req.setAuthor(item.getAuthor().getId());
-			req.setStatus(item.getStatus().getId());
+			requirement.setTitle(item.getTitle());
+			requirement.setPolarionUri(item.getUri());
+			requirement.setCreatedOn(item.getCreated());
+			requirement.setUpdatedOn(item.getCreated());
+			requirement.setAuthor(item.getAuthor().getId());
+			requirement.setStatus(item.getStatus().getId());
 			
 			// Hack
-			if (item.getAssignee().length >0) req.setAssignee(item.getAssignee()[0].getName());
+			if (item.getAssignee().length >0) requirement.setAssignee(item.getAssignee()[0].getName());
 			
 			// get Attachments 
 			if (item.getAttachments() != null)
 				for (com.polarion.alm.ws.client.types.tracker.Attachment anAttachment: item.getAttachments()){
-					req.addAttachment(anAttachment.getId(), anAttachment.getUrl(), anAttachment.getFileName(), anAttachment.getUri());
+					requirement.addAttachment(anAttachment.getId(), anAttachment.getUrl(), anAttachment.getFileName(), anAttachment.getUri());
 				}
 			
 			// get all links
 			if (item.getLinkedWorkItemsDerived() != null)
 				for (LinkedWorkItem anItem: item.getLinkedWorkItemsDerived()){
-					req.addDerivedPolarionURI(anItem.getWorkItemURI());
+					requirement.addDerivedPolarionURI(anItem.getWorkItemURI());
 				}
 			if (item.getLinkedWorkItems() != null)
 				for (LinkedWorkItem anItem: item.getLinkedWorkItems()){
-					req.addLinkedPolarionURI(anItem.getWorkItemURI());
+					requirement.addLinkedPolarionURI(anItem.getWorkItemURI());
 				}
 			// copy all custom fields
 			for (Custom aCustomField : item.getCustomFields()){
 				
 				if (aCustomField.getKey().equalsIgnoreCase("idKA"))
-					req.setCustomerRequirementId(aCustomField.getValue().toString());
+					requirement.setCustomerRequirementId(aCustomField.getValue().toString());
 				
 				if (aCustomField.getKey().equalsIgnoreCase("titleKA"))
-					req.setCustomerRequirementTitle(aCustomField.getValue().toString());
+					requirement.setCustomerRequirementTitle(aCustomField.getValue().toString());
 				
 				if (aCustomField.getKey().equalsIgnoreCase("customerType"))
-					req.setCustomerType(aCustomField.getValue().toString());
+					requirement.setCustomerType(aCustomField.getValue().toString());
 				
 				if (aCustomField.getKey().equalsIgnoreCase("sourceModule"))
-					req.setSourceModule(aCustomField.getValue().toString());
+					requirement.setSourceModule(aCustomField.getValue().toString());
 				
 				if (aCustomField.getKey().equalsIgnoreCase("identification"))
-					req.setSourceID(aCustomField.getValue().toString());
+					requirement.setSourceID(aCustomField.getValue().toString());
 				
 				if ((aCustomField.getKey().equalsIgnoreCase("descKA")) || (aCustomField.getKey().equalsIgnoreCase("rif_Specific_1st-Tier")))
-					if (req.getDescription()!= null)
-						req.setDescription(req.getDescription() + "\n" + (String) ((Text) aCustomField.getValue()).getContent());
-					else req.setDescription((String) ((Text) aCustomField.getValue()).getContent());
+					if (requirement.getDescription()!= null)
+						requirement.setDescription(requirement.getDescription() + "\n" + (String) ((Text) aCustomField.getValue()).getContent());
+					else requirement.setDescription((String) ((Text) aCustomField.getValue()).getContent());
 				
 				if (aCustomField.getKey().equalsIgnoreCase("OPL_Responsible_1st-Tier")){
 					if (getSimpleValue(aCustomField.getValue()).equalsIgnoreCase("rif_responsible")) 
-							req.setResponsible(true);
+							requirement.setResponsible(true);
 				}
 				
 				if (aCustomField.getKey().equalsIgnoreCase("rif_OPL_Status_OEM_1st-Tier")){
 					if (getSimpleValue(aCustomField.getValue()).equalsIgnoreCase("rif_accepted")) 
-							req.setAccepted(true);
+							requirement.setAccepted(true);
 				}
 				
 				if (aCustomField.getKey().equalsIgnoreCase("kategorien"))
-					req.setCategory(getSimpleValue(aCustomField.getValue()));
+					requirement.setCategory(getSimpleValue(aCustomField.getValue()));
 				
 				if (aCustomField.getKey().equalsIgnoreCase("customreqformKA"))
-					req.setCustomerReqType((getSimpleValue(aCustomField.getValue())));
+					requirement.setCustomerReqType((getSimpleValue(aCustomField.getValue())));
 				
 				if (aCustomField.getKey().equalsIgnoreCase("updateType"))
 					if (aCustomField.getValue()!= null) 
-						req.setUpdateType((getSimpleValue(aCustomField.getValue())));
+						requirement.setUpdateType((getSimpleValue(aCustomField.getValue())));
 				
 				if (aCustomField.getKey().equalsIgnoreCase("rif_lastUpdateKA")){
 					Calendar aCal = Calendar.getInstance();
@@ -547,52 +548,53 @@ public class WorkItemPolarionLoader implements Closeable {
 						if (aString.indexOf('T')>= 0) {
 							aCal.setTime(isoTimePointFormatter.parse(aString));
 						}else aCal.setTime(germanDateFormatter.parse(aString));
-						req.setCustomerUpdatedOn(aCal);
+						requirement.setCustomerUpdatedOn(aCal);
 					} catch (ParseException e) {
 						// TODO Auto-generated catch block
-						log.error("time not convertable " + aString);
-						if (log.isDebugEnabled()) e.printStackTrace();
+						logger.error("time not convertable " + aString);
+						if (logger.isDebugEnabled()) e.printStackTrace();
 					}
 					
 				}
 					
 				
 				if (aCustomField.getKey().equalsIgnoreCase("validityKA"))
-					req.setCustomerStatus(getSimpleValue(aCustomField.getValue()));
+					requirement.setCustomerStatus(getSimpleValue(aCustomField.getValue()));
 				
 				if (aCustomField.getKey().equalsIgnoreCase("brand"))
 					for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
-						req.addBrand(anID.getId());
+						requirement.addBrand(anID.getId());
 				
 				if (aCustomField.getKey().equalsIgnoreCase("market"))
 					for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
-						req.addMarket(anID.getId());
+						requirement.addMarket(anID.getId());
 				
 				if (aCustomField.getKey().equalsIgnoreCase("brandOEM"))
 					for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
-						req.addCustomerBrand(anID.getId());
+						requirement.addCustomerBrand(anID.getId());
 				
 				if (aCustomField.getKey().equalsIgnoreCase("marketOEM"))
 					for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
-						req.addCustomerMarket(anID.getId());
+						requirement.addCustomerMarket(anID.getId());
 			}
 			
 			
 			
 			// return
-			return req;
+			return requirement;
 		}
 		
 		/**
 		 * convertToFeature
 		 * 
-		 * @param item
-		 * @return
+		 * @param item workitem
+		 * @param feature to update reused or NULL
+		 * @return updated or new feature
 		 */
-		public Feature convertToFeature(WorkItem item){
+		public Feature convertToFeature(WorkItem item, Feature feature){
 			
-			Feature aFeature = new Feature(item.getId());
-			return (Feature) convertToRequirement(item, (Requirement) aFeature);
+			if (feature == null) feature = new Feature(item.getId());
+			return (Feature) convertToRequirement(item, (Requirement) feature);
 		}
 
 		/**
@@ -620,7 +622,7 @@ public class WorkItemPolarionLoader implements Closeable {
 			try {
 				return this.trackerService.getWorkItemById(project, id);
 			} catch (RemoteException e) {
-				if (log.isDebugEnabled()) e.printStackTrace();
+				if (logger.isDebugEnabled()) e.printStackTrace();
 				return null;
 			}
 		}

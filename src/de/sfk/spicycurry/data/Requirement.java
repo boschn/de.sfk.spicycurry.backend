@@ -6,7 +6,8 @@ package de.sfk.spicycurry.data;
 import java.util.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import javax.persistence.*;
 import javax.persistence.Entity;
 

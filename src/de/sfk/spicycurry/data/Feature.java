@@ -19,7 +19,7 @@ public class Feature extends Requirement implements Serializable{
 	private static final long serialVersionUID = 2L;
 	
 	@Column(nullable=true, length = 1024)
-	private String jiraLink = "";
+	private String jiraLink = null;
 	
 	/**
 	 * constructor

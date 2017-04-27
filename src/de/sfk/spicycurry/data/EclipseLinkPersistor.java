@@ -8,7 +8,8 @@ import javax.persistence.Persistence;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 /**
  * persistor class for eclipseLink
  * 
@@ -26,7 +27,7 @@ public class EclipseLinkPersistor extends AbstractPersistor implements IPersisto
 	// statics
 	private static final String PERSISTENCE_PROVIDER_DEFAULTNAME = "H2LOCAL";
 	// Logger
-	protected Log log = LogFactory.getLog(EclipseLinkPersistor.class);
+	protected Logger logger = LogManager.getLogger(EclipseLinkPersistor.class);
 	
 	/**
 	 * constructor
@@ -50,7 +51,7 @@ public class EclipseLinkPersistor extends AbstractPersistor implements IPersisto
 		if ((em == null) || !em.isOpen()) 
 			em = emf.createEntityManager();
 		
-		log.info(persistenceProvider + " was opened");
+		logger.info(persistenceProvider + " was opened");
 
 	}
 
@@ -58,9 +59,9 @@ public class EclipseLinkPersistor extends AbstractPersistor implements IPersisto
 	 * @see de.sfk.spicycurry.data.IPersistor#getLog()
 	 */
 	@Override
-	public Log getLog() {
+	public Logger getLogger() {
 		// TODO Auto-generated method stub
-		return null;
+		return this.logger;
 	}
 
 }

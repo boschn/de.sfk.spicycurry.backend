@@ -2,13 +2,16 @@
  * 
  */
 package de.sfk.spicycurry.data;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 /**
  * @author boris.schneider
  *
  */
 public class FeatureLiveVisitor implements Visitor {
 
+	private Logger logger = LogManager.getLogger(FeatureLiveVisitor.class);
+	
 	/**
 	 * visit a feature
 	 */

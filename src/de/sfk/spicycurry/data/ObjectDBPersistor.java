@@ -5,11 +5,9 @@ package de.sfk.spicycurry.data;
 
 import java.io.Closeable;
 import java.util.Properties;
-
 import javax.persistence.Persistence;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author boris.schneider
@@ -28,7 +26,7 @@ public class ObjectDBPersistor extends AbstractPersistor implements Closeable, I
 	private static final String PERSISTENCE_PROVIDER_DEFAULTNAME = "SpicyCurry";
 	
 	// Logger
-	protected Log log = LogFactory.getLog(ObjectDBPersistor.class);
+	protected Logger logger = LogManager.getLogger(ObjectDBPersistor.class);
 	
 	/**
 	 * constructor
@@ -55,14 +53,14 @@ public class ObjectDBPersistor extends AbstractPersistor implements Closeable, I
 		if ((em == null) || !em.isOpen()) 
 			em = emf.createEntityManager();
 		
-		log.info(persistenceProvider + " was opened");
+		logger.info(persistenceProvider + " was opened");
 	}
 
 	/**
 	 * gets the log
 	 */
 	@Override
-	public Log getLog() {
-		return log;
+	public Logger getLogger() {
+		return logger;
 	}
 }

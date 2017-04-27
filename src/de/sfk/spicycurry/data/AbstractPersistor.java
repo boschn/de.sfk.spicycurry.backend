@@ -82,7 +82,7 @@ public abstract class AbstractPersistor implements IPersistor {
 	public void close() throws IOException {
 		em.close();
 		emf.close();
-		this.getLog().info(persistenceProvider + " was closed");
+		this.getLogger().info(persistenceProvider + " was closed");
 	}
 
 	@Override
@@ -96,35 +96,19 @@ public abstract class AbstractPersistor implements IPersistor {
 	@Override
 	public void persist(Object o) {
 		if (!isOpen()) this.Open();
-		if (em.isOpen()) {
-			try {
-					em.persist(o);
-			}catch (Exception e)
-			{
-				if (this.getLog() != null) {
-				this.getLog().info(e.getMessage());
-				if (this.getLog().isDebugEnabled())
-					this.getLog().error(e.getStackTrace());
-				}
-			}
-		}
+		
+		if (em.isOpen()) em.persist(o);
+		else if (this.getLogger() != null && this.getLogger().isDebugEnabled())
+			this.getLogger().debug("EntityManager couldn't open - persist impossible of object " + o.getClass().getName() + " "+ o.toString());
+		
 	}
 
 	@Override
 	public void commit() {
-		 
-			try {
-				if (em != null)
-					em.getTransaction().commit();
-			}catch (Exception e)
-			{
-				if (this.getLog() != null) {
-					this.getLog().info(e.getMessage());
-					if (this.getLog().isDebugEnabled()){
-						this.getLog().error(e.getStackTrace());
-					}
-			}
-		}
+		if (em != null)
+			em.getTransaction().commit();
+		else if (this.getLogger() != null && this.getLogger().isDebugEnabled()) 
+						this.getLogger().debug("em is null");
 	}
 
 	/* (non-Javadoc)
@@ -134,35 +118,33 @@ public abstract class AbstractPersistor implements IPersistor {
 	public void begin() {
 		if (!isOpen()) this.Open();
 		try {
+			  
 			em.getTransaction().begin();
+			
 		}catch (Exception e)
 		{
-			if (this.getLog() != null) {
-				this.getLog().info(e.getMessage());
-				if (this.getLog().isDebugEnabled())
-					this.getLog().error(e.getStackTrace());
+			if (this.getLogger() != null) {
+				this.getLogger().info(e.getMessage());
+				if (this.getLogger().isDebugEnabled())
+					this.getLogger().catching(e);
 			}
 		}
 	}
 
 	@Override
 	public void rollback() {
-
-			
-		
-			try {
+		try {
 				if (em != null)
 					em.getTransaction().rollback();
-			}catch (Exception e)
-			{
-				if (this.getLog() != null) {
-					this.getLog().info(e.getMessage());
-					if (this.getLog().isDebugEnabled())
-						this.getLog().error(e.getStackTrace());
+				
+			}catch (Exception e){
+				if (this.getLogger() != null) {
+					this.getLogger().info(e.getMessage());
+					if (this.getLogger().isDebugEnabled())
+						this.getLogger().error(e.getStackTrace());
 				}
 			}
 			
-	
 	}
 
 }

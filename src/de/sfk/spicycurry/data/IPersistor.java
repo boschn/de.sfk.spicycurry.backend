@@ -3,7 +3,8 @@ package de.sfk.spicycurry.data;
 import java.io.IOException;
 
 import javax.persistence.EntityManager;
-import org.apache.commons.logging.Log;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public interface IPersistor {
 
@@ -65,5 +66,5 @@ public interface IPersistor {
 	 * 
 	 * @param logger
 	 */
-	Log getLog();
+	Logger getLogger();
 }

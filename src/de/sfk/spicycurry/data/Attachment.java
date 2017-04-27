@@ -4,9 +4,14 @@ import java.sql.Timestamp;
 
 import javax.persistence.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 @Embeddable
 public class Attachment {
 
+	private static Logger logger = LogManager.getLogger(Attachment.class);
+	
 	@Transient
 	private static final long serialVersionUID = 1L;
 	

@@ -3,13 +3,9 @@
  */
 package de.sfk.spicycurry.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import com.polarion.alm.ws.client.types.tracker.Custom;
-import com.polarion.alm.ws.client.types.tracker.CustomField;
-import com.polarion.alm.ws.client.types.tracker.LinkedWorkItem;
-import com.polarion.alm.ws.client.types.tracker.WorkItem;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author boris.schneider
@@ -18,7 +14,7 @@ import com.polarion.alm.ws.client.types.tracker.WorkItem;
 public class DataRunner {
 
 	// Logger
-	public static Log logger = LogFactory.getLog(DataRunner.class);
+	public static Logger logger = LogManager.getLogger(DataRunner.class);
 	
 	/**
 	 * run database interaction
@@ -26,8 +22,15 @@ public class DataRunner {
 	 */
 	public static void run(String[] args) {
 
+		if (logger.isDebugEnabled()) {
+			logger.debug("entering run(String[])");
+			logger.debug("args: " + args);
+		}
 		if (args == null || args.length ==0) {
 			logger.error("no command to run");
+			if (logger.isDebugEnabled()) {
+				logger.debug("exiting run()");
+			}
 			return;
 		}
 
@@ -48,22 +51,29 @@ public class DataRunner {
 			logger.error(e.getMessage());
 			if (logger.isTraceEnabled()) e.printStackTrace();
 		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("exiting run()");
+		}
 	}
 	public static void test(String[] args) {
 		
+		if (logger.isDebugEnabled()) {
+			logger.debug("entering test(String[])");
+			logger.debug("args: " + args);
+		}
 		try {
 			// Setting.Default.read();
 			
 			logger.info("runner started");
 			
-			if (FeatureStore.db.keySet().size() == 0) {
+			if (FeatureStore.db.keySet().size() <= 1400) {
 				FeatureStore.db.loadAllPolarion();
 				logger.info(FeatureStore.db.count() + " features loaded from polarion");
 			}
 			
 			if (RequirementStore.db.has("1010-MIB3-ALG-57871")){ 
 					RequirementStore.db.loadPolarion("1010-MIB3-ALG-57871");
-					logger.info("1010-MIB3-ALG-57871 loaded from polarion");
+					logger.trace("1010-MIB3-ALG-57871 loaded from polarion");
 			}
 			
 			logger.info(RequirementStore.db.count() + " requirements loaded from polarion");
@@ -80,6 +90,9 @@ public class DataRunner {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("exiting test()");
+		}
 	}
 	/**
 	 * run full database feed from polarion
@@ -87,6 +100,10 @@ public class DataRunner {
 	 */
 	public static void runPolarionFullFeed(String[] args) {
 		
+		if (logger.isDebugEnabled()) {
+			logger.debug("entering runPolarionFullFeed(String[])");
+			logger.debug("args: " + args);
+		}
 		try {
 			// Setting.Default.read();
 			
@@ -105,6 +122,9 @@ public class DataRunner {
 			e.printStackTrace();
 			
 			logger.info("runner full polarion feed failed");
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("exiting runPolarionFullFeed()");
 		}
 	}
 

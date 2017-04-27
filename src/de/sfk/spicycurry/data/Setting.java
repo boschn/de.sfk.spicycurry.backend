@@ -11,8 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author boris.schneider
@@ -30,7 +30,7 @@ public class Setting {
 	private boolean changed = false;
 	
 	// Logger
-	private Log log = LogFactory.getLog(Setting.class);
+	private Logger logger = LogManager.getLogger(Setting.class);
 	
 	/**
 	 * ctor
@@ -85,14 +85,14 @@ public class Setting {
 			if (changed || force){
 			aWriter = new FileWriter(defaultFileName );
 			defaultProperties.store(aWriter, "properties for SpicyCurry Java from " + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(new Timestamp(new Date().getTime())));
-			log.info(defaultFileName + " written");
+			logger.info(defaultFileName + " written");
 			aWriter.close();
 			changed = false;
 			}
 		}
 		catch ( IOException e )
 		{
-		  log.debug("writing to " + defaultFileName + "failed :'" + e.getMessage()+"'");
+		  logger.debug("writing to " + defaultFileName + "failed :'" + e.getMessage()+"'");
 		  e.printStackTrace();
 		}
 		finally
@@ -111,14 +111,14 @@ public class Setting {
 		{
 		  aReader = new FileReader( defaultFileName );
 		  defaultProperties.load( aReader );
-		  log.info(defaultFileName + " read");
+		  logger.info(defaultFileName + " read");
 		  aReader.close();
 		  return true;
 		}
 		catch ( IOException e )
 		{
-		  log.debug("reading from " + defaultFileName + "failed :'" + e.getMessage()+"'");
-		  if (log.isDebugEnabled()){
+		  logger.debug("reading from " + defaultFileName + "failed :'" + e.getMessage()+"'");
+		  if (logger.isDebugEnabled()){
 			  e.printStackTrace();
 		  }
 		}

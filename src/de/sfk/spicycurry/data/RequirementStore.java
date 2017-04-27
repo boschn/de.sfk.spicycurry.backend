@@ -10,8 +10,8 @@ package de.sfk.spicycurry.data;
 
 import javax.persistence.*;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.Closeable;
 import java.util.*;
@@ -45,7 +45,7 @@ public class RequirementStore implements Closeable {
 			
 
 		// Logger
-		private Log log = LogFactory.getLog(RequirementStore.class);
+		private Logger logger = LogManager.getLogger(RequirementStore.class);
 		
 		/**
 		 * constructor
@@ -86,8 +86,7 @@ public class RequirementStore implements Closeable {
 				}
 				return loader;
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.catching(e);
 				return null;
 			}
 		}
@@ -105,8 +104,9 @@ public class RequirementStore implements Closeable {
 		 * @return Feature added or null
 		 */
 		protected Requirement add(WorkItem item, boolean force){
-						
-			Requirement aRequirement = (Requirement) this.getLoader().convertToRequirement(item, null);
+			Requirement aRequirement = null;			
+			if (this.hasUri(item.getUri())) aRequirement = this.getByUri(item.getUri());
+			aRequirement = (Requirement) this.getLoader().convertToRequirement(item, aRequirement);
 			return add(aRequirement, force);
 		}
 		/**
@@ -125,7 +125,7 @@ public class RequirementStore implements Closeable {
 		public Requirement add(Requirement requirement, boolean force) {
 			if (force || !this.has(requirement)) {
 				requirements.put(requirement.getId(), requirement);
-				if (!this.hasByUri(requirement))
+				if (!this.hasUri(requirement))
 					this.requirementsByUri.put(requirement.getPolarionUri(), requirement);
 				return requirement;
 			}
@@ -154,8 +154,17 @@ public class RequirementStore implements Closeable {
 		 * @param id
 		 * @return true or false
 		 */
-		public boolean hasByUri(Requirement requirement){
+		public boolean hasUri(Requirement requirement){
 			if (requirementsByUri.containsKey(requirement.getPolarionUri())) return true;
+			return false;
+		}
+		/**
+		 * has the store the requirement 
+		 * @param id
+		 * @return true or false
+		 */
+		public boolean hasUri(String uri){
+			if (requirementsByUri.containsKey(uri)) return true;
 			return false;
 		}
 		/**
@@ -181,7 +190,8 @@ public class RequirementStore implements Closeable {
 			return null;
 		}
 		/**
-		 * returns a requirement by Id or null
+		 * returns a requirement from the store by uri or null if not found
+		 * 
 		 * @param id
 		 * @return Feature or null
 		 */
@@ -192,27 +202,40 @@ public class RequirementStore implements Closeable {
 			return null;
 		}
 		/**
-		 * load - fille the store from Polarion with default values
-		 * @return
+		 * load - load the workitem with the standard setting and persist
+		 * 
+		 * @param id of the workitem
+		 * @return true if successfull
 		 */
 		public boolean loadPolarion(String id)
 		{
-			return loadAllPolarion(PolarionParameter.Default.getBaseUrl(), 
+			return loadPolarion(PolarionParameter.Default.getBaseUrl(), 
 					    PolarionParameter.Default.getUserName(),
 					    PolarionParameter.Default.getPassWord(),
 					    id);
 		}
+		/**
+		 * load all workitems from polarion with standard user and persist
+		 * 
+		 * @return true if successfull
+		 */
 		public boolean loadAllPolarion()
 		{
-			return loadAllPolarion(PolarionParameter.Default.getBaseUrl(), 
+			return loadPolarion(PolarionParameter.Default.getBaseUrl(), 
 					    PolarionParameter.Default.getUserName(),
 					    PolarionParameter.Default.getPassWord(),
 					    null);
 		}
 		/**
-		 * load - fill store from Polarion
+		 * load from polarion the workitem and persist it in store
+		 * 
+		 * @param baseUrl polarion base url
+		 * @param userName polarion access username
+		 * @param passWord polarion password
+		 * @param id of the workitem or null to load ALL query
+		 * @return
 		 */
-		private boolean loadAllPolarion(String baseUrl, String userName, String passWord, String id)
+		private boolean loadPolarion(String baseUrl, String userName, String passWord, String id)
 		{
 			long i=0;
 			try {
@@ -226,8 +249,8 @@ public class RequirementStore implements Closeable {
 				
 				// run the query
 				aList = aLoader.getWorkItemsUriByQuery(aQry, null);
-				log.info("from polarion " + aList.length + " uris retrieved");
-				persistor.begin();
+				logger.info("from polarion " + aList.length + " uris retrieved");
+				
 				
 				// fill
 				for(String anUri: aList)
@@ -237,24 +260,40 @@ public class RequirementStore implements Closeable {
 					if (anItem != null){
 						Requirement aRequirement = 	this.add(anItem, true);
 						if (aRequirement != null) {
-							persistor.persist(aRequirement);
-							// commit
-							persistor.commit();
-							i++;
-							if (i % 1000 == 0) System.out.print('.');
+							
+							try {
+								persistor.begin();
+								persistor.persist(aRequirement);
+								persistor.commit();
+								i++;
+								if (i % 1000 == 0)
+									System.out.print('.');
+								
+							} catch (Exception e) {
+								
+								if (logger.isDebugEnabled())
+									logger.debug(e.getMessage());
+								else if (logger.isErrorEnabled())
+										logger.error(e.getStackTrace());
+
+							}
 						}else
-							if (log.isDebugEnabled()) log.debug(anItem.getUri() + " unable to convert to requirement");
-					} if (log.isDebugEnabled()) log.debug(anUri + " unable to obtain work item from polarion");
+							if (logger.isDebugEnabled()) 
+								logger.debug(anItem.getUri() + " unable to convert to requirement");
+						
+					} else
+						if (logger.isDebugEnabled()) 
+							logger.debug(anUri + " unable to obtain work item from polarion");
 				}
 				 
 				
-				log.info(i + " requirements persisted");
+				logger.info(i + " requirements persisted");
 				return true;
 				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				log.error(e.getMessage(), e);
+				logger.error(e.getMessage(), e);
 			}
 			
 			// rollback & close  
@@ -290,11 +329,11 @@ public class RequirementStore implements Closeable {
 			     System.out.println();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
-					 log.info(e.getLocalizedMessage());
+					 logger.info(e.getLocalizedMessage());
 					 return;
 				} 
 			
-		     log.info("has retrieved " + requirements.size() + " entries from persistence");
+		     logger.info("has retrieved " + requirements.size() + " entries from persistence");
 		}
 		
 		/**
@@ -357,8 +396,8 @@ public class RequirementStore implements Closeable {
 					// add the requirement to the list
 					aList.add(aChildRequirement);
 				} else
-					if (log.isDebugEnabled()){ 
-						log.info("'" + anUri + "' is not loaded in requirements");
+					if (logger.isDebugEnabled()){ 
+						logger.info("'" + anUri + "' is not loaded in requirements");
 					}
 			}
 			return aList;

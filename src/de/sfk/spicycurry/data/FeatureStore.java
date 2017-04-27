@@ -5,13 +5,10 @@ package de.sfk.spicycurry.data;
 
 
 import javax.persistence.*;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.Closeable;
 import java.util.*;
-
 import com.polarion.alm.ws.client.types.tracker.WorkItem;
 
 /**
@@ -40,7 +37,7 @@ public class FeatureStore implements Closeable {
 		private WorkItemPolarionLoader loader = null;
 		
 		// Logger
-		private Log log = LogFactory.getLog(FeatureStore.class);
+		private Logger logger = LogManager.getLogger(FeatureStore.class);
 				
 		/**
 		 * constructor
@@ -82,7 +79,7 @@ public class FeatureStore implements Closeable {
 				return loader;
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.catching(e);
 				return null;
 			}
 		}
@@ -99,8 +96,10 @@ public class FeatureStore implements Closeable {
 		 * @return Feature added or null
 		 */
 		protected Feature add(WorkItem item){
-						
-			Feature aFeature = (Feature) this.getLoader().convertToFeature(item);
+			Feature aFeature = null;
+			
+			if (this.hasUri(item.getUri()))	aFeature = this.getByUri(item.getUri());
+			aFeature = (Feature) this.getLoader().convertToFeature(item, aFeature);
 			return add(aFeature, true);
 		}
 		
@@ -111,6 +110,7 @@ public class FeatureStore implements Closeable {
 		 */
 		public Feature add(Feature feature, boolean force) {
 			if (force || !this.has(feature)) {
+				// will be replaced by put
 				features.put(feature.getId(), feature);
 				if (!this.hasUri(feature.getPolarionUri())) featuresByUri.put(feature.getPolarionUri(), feature);
 				return feature;
@@ -225,8 +225,8 @@ public class FeatureStore implements Closeable {
 				
 				// run the query 
 				aList =  aLoader.getWorkItemsUriByQuery(aQry,null);
-				log.info("from polarion " + aList.length + " uris retrieved");
-				persistor.begin();
+				logger.info("from polarion " + aList.length + " uris retrieved");
+				
 				
 				// fill
 				for(String anUri: aList)
@@ -236,22 +236,33 @@ public class FeatureStore implements Closeable {
 					if (anItem != null){
 						Feature aFeature = 	this.add(anItem);
 						if (aFeature != null) {
-							persistor.persist(aFeature);
-							// commit
-							persistor.commit();
-							i++;
-							if (i % 100 == 0) System.out.print('.');
+							try {
+								persistor.begin();
+								persistor.persist(aFeature);
+								persistor.commit();
+								i++;
+								if (i % 100 == 0) System.out.print('.');
+								
+							} catch (Exception e) {
+								if (logger.isErrorEnabled()) 
+									logger.catching(e);
+								else logger.debug(e.getMessage());
+							}
 						}else
-							if (log.isDebugEnabled()) log.debug(anItem.getUri() + " unable to convert to feature");
-					} if (log.isDebugEnabled()) log.debug(anUri + " unable to obtain work item from polarion");
+							
+							if (logger.isDebugEnabled()) 
+								logger.debug(anItem.getUri() + " unable to convert to feature");
+						
+					} else if (logger.isDebugEnabled()) 
+						logger.debug(anUri + " unable to obtain work item from polarion");
 				}
-				log.info(i + " features persisted");
+				logger.info(i + " features persisted");
 				return true;
 				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				log.error(e.getMessage(), e);
+				logger.error(e.getMessage(), e);
 			}
 			
 			// rollback & close  
@@ -280,11 +291,11 @@ public class FeatureStore implements Closeable {
 		        }
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				 log.info(e.getLocalizedMessage());
+				 logger.info(e.getLocalizedMessage());
 				 return;
 			} 
 		        
-		    log.info("FeatureStore has retrieved " + features.size() + " entries from persistence");
+		    logger.info("FeatureStore has retrieved " + features.size() + " entries from persistence");
 		}
 		/**
 		 * get the set of keys
