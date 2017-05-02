@@ -98,7 +98,8 @@ public class FeatureStore implements Closeable {
 		protected Feature add(WorkItem item){
 			Feature aFeature = null;
 			
-			if (this.hasUri(item.getUri()))	aFeature = this.getByUri(item.getUri());
+			if (this.hasUri(item.getUri()))	
+				aFeature = this.getByUri(item.getUri());
 			aFeature = (Feature) this.getLoader().convertToFeature(item, aFeature);
 			return add(aFeature, true);
 		}
@@ -112,7 +113,8 @@ public class FeatureStore implements Closeable {
 			if (force || !this.has(feature)) {
 				// will be replaced by put
 				features.put(feature.getId(), feature);
-				if (!this.hasUri(feature.getPolarionUri())) featuresByUri.put(feature.getPolarionUri(), feature);
+				if (!this.hasUri(feature.getPolarionUri()))
+					featuresByUri.put(feature.getPolarionUri(), feature);
 				return feature;
 			}
 			return null;

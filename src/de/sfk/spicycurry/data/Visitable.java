@@ -9,6 +9,6 @@ package de.sfk.spicycurry.data;
  * @author boris.schneider
  *
  */
-public interface Visited {
+public interface Visitable {
 	public void accept( Visitor v ); // dispatch the visitor
 }

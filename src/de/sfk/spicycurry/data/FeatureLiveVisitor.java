@@ -25,7 +25,7 @@ public class FeatureLiveVisitor implements Visitor {
 				f.getCategory(), 
 				f.getDescription());
 		// visit all requirements
-		for(Visited v: f.loadRequirements()) 
+		for(Visitable v: f.loadSubRequirements()) 
 			v.accept(this);
 	}
 
@@ -37,7 +37,7 @@ public class FeatureLiveVisitor implements Visitor {
 		
 		System.out.printf("\t Requirement: '%s'- '%s'\n", r.getId(),r.getDescription());
 		// visit all requirements
-		for(Visited v: r.loadRequirements()) 
+		for(Visitable v: r.loadSubRequirements()) 
 			v.accept(this);
 	}
 

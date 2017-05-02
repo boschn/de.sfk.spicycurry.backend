@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class cmdline {
 
-	private static Logger logger = LogManager.getRootLogger();
+	private static Logger logger = LogManager.getLogger();
 	/**
 	 * @param args
 	 */

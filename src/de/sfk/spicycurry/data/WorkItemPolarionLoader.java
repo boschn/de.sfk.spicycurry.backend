@@ -463,7 +463,7 @@ public class WorkItemPolarionLoader implements Closeable {
 		 * @param requirement of an existing requirment or null for new feature
 		 * @return a requirement object
 		 */
-		public Object convertToRequirement(WorkItem item, Requirement requirement){
+		public Requirement convertToRequirement(WorkItem item, Requirement requirement){
 		
 			if (requirement == null) requirement = new Requirement(item.getId());
 			
@@ -592,9 +592,13 @@ public class WorkItemPolarionLoader implements Closeable {
 		 * @return updated or new feature
 		 */
 		public Feature convertToFeature(WorkItem item, Feature feature){
-			
-			if (feature == null) feature = new Feature(item.getId());
-			return (Feature) convertToRequirement(item, (Requirement) feature);
+			Requirement requirement = null;
+			// use existing requirment to create feature
+			if (feature != null) 
+				requirement = feature.getRequirement();
+			// convert
+			requirement = this.convertToRequirement(item, requirement);
+			return new Feature(requirement);
 		}
 
 		/**

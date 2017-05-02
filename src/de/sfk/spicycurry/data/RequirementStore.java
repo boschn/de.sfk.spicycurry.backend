@@ -106,7 +106,7 @@ public class RequirementStore implements Closeable {
 		protected Requirement add(WorkItem item, boolean force){
 			Requirement aRequirement = null;			
 			if (this.hasUri(item.getUri())) aRequirement = this.getByUri(item.getUri());
-			aRequirement = (Requirement) this.getLoader().convertToRequirement(item, aRequirement);
+			aRequirement = this.getLoader().convertToRequirement(item, aRequirement);
 			return add(aRequirement, force);
 		}
 		/**

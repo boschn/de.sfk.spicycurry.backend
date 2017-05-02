@@ -23,7 +23,7 @@ import org.eclipse.persistence.annotations.PrimaryKey;
 
 @Entity(name="Requirement")
 @Inheritance(strategy=InheritanceType.JOINED)
-public class Requirement implements Visited ,Serializable{
+public class Requirement implements Visitable ,Serializable{
 
 	@Transient
 	private static final long serialVersionUID = 1L;
@@ -32,7 +32,7 @@ public class Requirement implements Visited ,Serializable{
 	 * fields
 	 */
 	@Id
-	@Column(name="id", nullable=false, length = 1024)
+	@Column(name="requirement_id", nullable=false, length = 1024)
 	private String id;
 	
 	@Column(nullable=true, length = 1024)
@@ -68,7 +68,7 @@ public class Requirement implements Visited ,Serializable{
 	@Column(nullable=true, length = 1024)
 	private String customerRequirementTitle;
 	
-		@Column(nullable=false, length = 5120)
+	@Column(nullable=false, length = 5120)
 	private String uri;
 	
 	@Column(nullable=true, length = 1024)
@@ -76,6 +76,13 @@ public class Requirement implements Visited ,Serializable{
 	
 	@Column(nullable=true, length = 1024)
 	private String status;
+	
+	@Column(nullable=false)
+	private boolean tracking; // true if the requirement is a tracking requirement / linked to a feature
+	
+	@OneToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name = "feature_id", nullable=true)
+	private Feature feature = null;
 	
 	@Column(nullable=false)
 	private boolean accepted; // true if the customer accepted responsibility
@@ -95,8 +102,6 @@ public class Requirement implements Visited ,Serializable{
 	@Version
 	private Timestamp lastUpdate;
 	
-	// @OneToMany(cascade= CascadeType.ALL, fetch = FetchType.LAZY) 
-	// @JoinColumn(name="uid", referencedColumnName = "id")
 	@ElementCollection
 	@CollectionTable(name ="Attachments", joinColumns = {@JoinColumn(name = "requirement_id")})
 	private List<Attachment> attachments = new ArrayList<Attachment>();
@@ -114,7 +119,9 @@ public class Requirement implements Visited ,Serializable{
 	@ElementCollection
 	private List<String> customerBrands = new ArrayList<String>();
 	
-	@Transient // @OneToMany (cascade= CascadeType.MERGE, fetch = FetchType.LAZY, mappedBy="id")
+	@Transient
+	// @ManyToMany (cascade= CascadeType.MERGE)
+	// @JoinColumn(name = "requirement_id", nullable=true)
 	private HashMap<String, Requirement> subRequirements = null;
 	
 	@ElementCollection
@@ -122,7 +129,8 @@ public class Requirement implements Visited ,Serializable{
 	@ElementCollection
 	private List<String> linkedPolarionURIs = new ArrayList<String>();
 	
-	@Transient //@OneToMany (fetch = FetchType.LAZY, mappedBy="id")
+	@OneToMany (fetch = FetchType.LAZY,cascade= CascadeType.MERGE)
+	@JoinColumn(name = "feature_id", nullable=true)
 	private Set<Feature> features = new HashSet<Feature>();
 	
 	@ElementCollection
@@ -304,14 +312,14 @@ public class Requirement implements Visited ,Serializable{
 	/**
 	 * @return Collection of Requirements - lazy load from Requirementsstore
 	 */
-	public Collection<Requirement> getRequirements() {
+	public Collection<Requirement> getSubRequirements() {
 		if (subRequirements == null) RequirementStore.db.getSubRequirements(this);
 		return subRequirements.values();
 	}
 	/**
 	 * @return Collection of Requirements - lazy load from Requirementsstore
 	 */
-	public Collection<Requirement> loadRequirements() {
+	public Collection<Requirement> loadSubRequirements() {
 		if (subRequirements == null){ 
 			RequirementStore.db.loadPolarionSubRequirements(this, null);
 		}

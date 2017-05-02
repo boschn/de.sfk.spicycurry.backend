@@ -1,13 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="TRACE">
+<Configuration name="development" status="ERROR"  monitorInterval="30" advertiser="multicastdns">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+      <PatternLayout pattern="%d{yyyy-MM-dd hh:mm:ss.SSS}|%t&gt;&gt;[%-5level:%logger{-4}] %msg %throwable %n"/>
     </Console>
+    <RollingFile name="FileLogger" fileName=".\log\spicyCurry.log" append="false"  
+    	bufferedIO="false" filePattern="log\$${date:yyyy-MM}\app-%d{MM-dd-yyyy}-%i.log.gz" 
+    	advertiseURI="file://./log/spicyCurry.log" advertise="true"> 
+      	<PatternLayout pattern="%d{ISO8601};%t;%-5level;%logger;%msg;%throwable;%n"/> 
+      	<DefaultRolloverStrategy max="20"/>
+      	<Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="20 MB"/>
+      </Policies>
+    </RollingFile> 
+    <Socket name="jlv" host="localhost" port="4445"
+            bufferedIO="true" reconnectionDelayMillis = "100"
+    />
   </Appenders>
   <Loggers>
-    <Root level="trace">
+   <Root level="ERROR">
       <AppenderRef ref="Console"/>
+      <AppenderRef ref="FileLogger"/>
     </Root>
+    <logger name="de.sfk" level="TRACE"  additivity="false">
+  		<AppenderRef ref="Console"/>
+  		<AppenderRef ref="FileLogger"/>
+  		<AppenderRef ref="jlv"/>
+  	</logger>
+    <logger name="org" level="DEBUG"  additivity="false">
+  		<AppenderRef ref="FileLogger"/>
+  		<AppenderRef ref="jlv"/>
+  	</logger>
+  	    <logger name="com" level="DEBUG" additivity="false">
+  		<AppenderRef ref="FileLogger"/>
+  		<AppenderRef ref="jlv"/>
+  	</logger>
+  	
   </Loggers>
 </Configuration>

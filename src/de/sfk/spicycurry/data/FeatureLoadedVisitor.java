@@ -17,7 +17,7 @@ public class FeatureLoadedVisitor implements Visitor {
 		
 		System.out.printf("\n Feature: '%s'- '%s' \n", f.getId(),f.getTitle());
 		// visit all requirements
-		for(Visited v: f.getRequirements()) 
+		for(Visitable v: f.getSubRequirements()) 
 			v.accept(this);
 	}
 
@@ -29,7 +29,7 @@ public class FeatureLoadedVisitor implements Visitor {
 		
 		System.out.printf("\t Requirement: '%s'- '%s'\n", r.getId(),r.getDescription());
 		// visit all requirements
-		for(Visited v: r.getRequirements()) 
+		for(Visitable v: r.getSubRequirements()) 
 			v.accept(this);
 
 	}

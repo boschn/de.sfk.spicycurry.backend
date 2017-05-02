@@ -24,7 +24,6 @@ public class DataRunner {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("entering run(String[])");
-			logger.debug("args: " + args);
 		}
 		if (args == null || args.length ==0) {
 			logger.error("no command to run");
@@ -59,12 +58,11 @@ public class DataRunner {
 		
 		if (logger.isDebugEnabled()) {
 			logger.debug("entering test(String[])");
-			logger.debug("args: " + args);
 		}
 		try {
 			// Setting.Default.read();
 			
-			logger.info("runner started");
+			logger.info("test started");
 			
 			if (FeatureStore.db.keySet().size() <= 1400) {
 				FeatureStore.db.loadAllPolarion();
@@ -73,7 +71,7 @@ public class DataRunner {
 			
 			if (RequirementStore.db.has("1010-MIB3-ALG-57871")){ 
 					RequirementStore.db.loadPolarion("1010-MIB3-ALG-57871");
-					logger.trace("1010-MIB3-ALG-57871 loaded from polarion");
+					logger.info("1010-MIB3-ALG-57871 loaded from polarion");
 			}
 			
 			logger.info(RequirementStore.db.count() + " requirements loaded from polarion");
