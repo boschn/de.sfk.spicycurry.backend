@@ -37,7 +37,11 @@ public class Setting {
 	 */
 	public Setting() {
 		super();
-		this.read();
+		this.read(null);
+	}
+	public Setting(String filename) {
+		super();
+		this.read(filename);
 	}
 	/**
 	 * gets aProperty or null
@@ -105,19 +109,20 @@ public class Setting {
 	 * 
 	 * @return true if successfull
 	 */
-	public boolean read(){
+	public boolean read(String filename){
 		FileReader aReader = null;
 		try
 		{
-		  aReader = new FileReader( defaultFileName );
+		  filename = (filename != null) ? filename : defaultFileName ;
+		  aReader = new FileReader( filename );
 		  defaultProperties.load( aReader );
-		  logger.info(defaultFileName + " read");
+		  logger.info(filename + " read");
 		  aReader.close();
 		  return true;
 		}
 		catch ( IOException e )
 		{
-		  logger.debug("reading from " + defaultFileName + "failed :'" + e.getMessage()+"'");
+		  logger.debug("reading from " + filename + "failed :'" + e.getMessage()+"'");
 		  if (logger.isDebugEnabled()){
 			  e.printStackTrace();
 		  }

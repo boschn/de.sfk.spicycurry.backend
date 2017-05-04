@@ -8,6 +8,7 @@ import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.Closeable;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import com.polarion.alm.ws.client.types.tracker.WorkItem;
 
@@ -190,8 +191,20 @@ public class FeatureStore implements Closeable {
 			return loadPolarion(PolarionParameter.Default.getBaseUrl(), 
 					    PolarionParameter.Default.getUserName(),
 					    PolarionParameter.Default.getPassWord(),
-					    null);
+					    null, null);
 		}
+		/**
+		 * load - fill the store from Polarion with default values
+		 * @return true if successfull
+		 */
+		public boolean loadAllPolarion(Date changeDate)
+		{
+			return loadPolarion(PolarionParameter.Default.getBaseUrl(), 
+					    PolarionParameter.Default.getUserName(),
+					    PolarionParameter.Default.getPassWord(),
+					    null, changeDate);
+		}
+
 		/**
 		 * load from polarion the Feature with the id
 		 * @param id
@@ -202,7 +215,7 @@ public class FeatureStore implements Closeable {
 			return loadPolarion(PolarionParameter.Default.getBaseUrl(), 
 					    PolarionParameter.Default.getUserName(),
 					    PolarionParameter.Default.getPassWord(),
-					    id);
+					    id, null);
 		}
 		/**
 		 * load from polarion the id
@@ -213,21 +226,25 @@ public class FeatureStore implements Closeable {
 		 * @param id
 		 * @return true if successfull
 		 */
-		private boolean loadPolarion(String baseUrl, String userName, String passWord, String id)
+		private boolean loadPolarion(String baseUrl, String userName, String passWord, String id, Date changeDate)
 		{
 			long i=0;
 			try {
 				WorkItemPolarionLoader aLoader = this.getPolarionLoader(baseUrl, userName, passWord);
 				// query
+
 				String[] aList;
 				String aQry;
 				
 				aQry = Setting.Default.get(PROPERTY_POLARION_FEATURE_QUERY);
 				if (id !=null) aQry = aQry + " AND id:"+ id ;
-				
+				if (changeDate != null) {
+					SimpleDateFormat aFormatter = new SimpleDateFormat("yyyyMMdd");
+					aQry = aQry + " AND updated:[" + aFormatter.format(changeDate) + " TO 30000000]";
+				}
 				// run the query 
 				aList =  aLoader.getWorkItemsUriByQuery(aQry,null);
-				logger.info("from polarion " + aList.length + " uris retrieved");
+				logger.info("from polarion " + aList.length + " uris retrieved for qry " );
 				
 				
 				// fill

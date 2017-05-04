@@ -46,11 +46,4 @@
 		<nature>org.eclipse.mylyn.wikitext.ui.wikiTextNature</nature>
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>resources</name>
-			<type>2</type>
-			<location>D:/vol/workspace/SpicyCurry/resources</location>
-		</link>
-	</linkedResources>
 </projectDescription>

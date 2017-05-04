@@ -4,6 +4,8 @@
 package de.sfk.spicycurry.data;
 
 
+import java.util.Date;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,44 +19,10 @@ public class DataRunner {
 	public static Logger logger = LogManager.getLogger(DataRunner.class);
 	
 	/**
-	 * run database interaction
-	 * @param args
+	 * run the test method
+	 * 
 	 */
-	public static void run(String[] args) {
-
-		if (logger.isDebugEnabled()) {
-			logger.debug("entering run(String[])");
-		}
-		if (args == null || args.length ==0) {
-			logger.error("no command to run");
-			if (logger.isDebugEnabled()) {
-				logger.debug("exiting run()");
-			}
-			return;
-		}
-
-		try {
-			switch (args[0].toUpperCase()) {
-			
-			case "FULLFEED": 
-				runPolarionFullFeed(args);
-				break;
-			case "TEST":
-				test(args);
-				break;
-			default:
-				logger.error("no command detected " + args[0] + " to run.\n Possible Comands: FULLFEED, TEST \n");
-			}
-			
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			if (logger.isTraceEnabled()) e.printStackTrace();
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("exiting run()");
-		}
-	}
-	public static void test(String[] args) {
+	public static void runTest() {
 		
 		if (logger.isDebugEnabled()) {
 			logger.debug("entering test(String[])");
@@ -96,30 +64,29 @@ public class DataRunner {
 	 * run full database feed from polarion
 	 * @param args
 	 */
-	public static void runPolarionFullFeed(String[] args) {
+	public static void runFeed(Date changedSince) {
 		
 		if (logger.isDebugEnabled()) {
-			logger.debug("entering runPolarionFullFeed(String[])");
-			logger.debug("args: " + args);
+			logger.debug("entering runFeed()");
 		}
 		try {
 			// Setting.Default.read();
 			
 			logger.info("runner full polarion feed started");
 			
-			FeatureStore.db.loadAllPolarion();
+			FeatureStore.db.loadAllPolarion(changedSince);
 			logger.info(FeatureStore.db.count() + " features loaded from polarion");
 			
-			RequirementStore.db.loadAllPolarion(); 
+			RequirementStore.db.loadAllPolarion(changedSince); 
 			logger.info(RequirementStore.db.count() + " requirements loaded from polarion");
 			
 			logger.info("runner full polarion feed ended");
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			
 			logger.info("runner full polarion feed failed");
+			if (logger.isDebugEnabled()){
+				logger.debug(e);
+			}
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("exiting runPolarionFullFeed()");

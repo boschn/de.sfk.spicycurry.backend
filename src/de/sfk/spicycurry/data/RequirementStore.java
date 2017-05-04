@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.Closeable;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.polarion.alm.ws.client.types.tracker.WorkItem;
@@ -212,7 +213,7 @@ public class RequirementStore implements Closeable {
 			return loadPolarion(PolarionParameter.Default.getBaseUrl(), 
 					    PolarionParameter.Default.getUserName(),
 					    PolarionParameter.Default.getPassWord(),
-					    id);
+					    id, null);
 		}
 		/**
 		 * load all workitems from polarion with standard user and persist
@@ -224,7 +225,19 @@ public class RequirementStore implements Closeable {
 			return loadPolarion(PolarionParameter.Default.getBaseUrl(), 
 					    PolarionParameter.Default.getUserName(),
 					    PolarionParameter.Default.getPassWord(),
-					    null);
+					    null, null);
+		}
+		/**
+		 * load all workitems from polarion with standard user and persist
+		 * 
+		 * @return true if successfull
+		 */
+		public boolean loadAllPolarion(Date changeDate)
+		{
+			return loadPolarion(PolarionParameter.Default.getBaseUrl(), 
+					    PolarionParameter.Default.getUserName(),
+					    PolarionParameter.Default.getPassWord(),
+					    null, changeDate);
 		}
 		/**
 		 * load from polarion the workitem and persist it in store
@@ -235,7 +248,7 @@ public class RequirementStore implements Closeable {
 		 * @param id of the workitem or null to load ALL query
 		 * @return
 		 */
-		private boolean loadPolarion(String baseUrl, String userName, String passWord, String id)
+		private boolean loadPolarion(String baseUrl, String userName, String passWord, String id, Date changeDate)
 		{
 			long i=0;
 			try {
@@ -246,6 +259,10 @@ public class RequirementStore implements Closeable {
 				
 				aQry = Setting.Default.get(PROPERTY_POLARION_REQUIREMENT_QUERY);
 				if (id != null) aQry = aQry + " AND id:"+ id;
+				if (changeDate != null) {
+					SimpleDateFormat aFormatter = new SimpleDateFormat("yyyyMMdd");
+					aQry = aQry + " AND updated:[" + aFormatter.format(changeDate) + " TO 30000000]";
+				}
 				
 				// run the query
 				aList = aLoader.getWorkItemsUriByQuery(aQry, null);
