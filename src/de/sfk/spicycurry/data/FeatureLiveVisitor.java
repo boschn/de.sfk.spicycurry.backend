@@ -41,4 +41,15 @@ public class FeatureLiveVisitor implements Visitor {
 			v.accept(this);
 	}
 
+	/**
+	 * visit a requirement
+	 */
+	@Override
+	public void visit(Specification s) {
+		
+		System.out.printf("\t Specification: '%s'- '%s'\n", s.getId(),s.getDescription());
+		// visit all requirements
+		for(Visitable v: s.loadSubSpecifications()) 
+			v.accept(this);
+	}
 }

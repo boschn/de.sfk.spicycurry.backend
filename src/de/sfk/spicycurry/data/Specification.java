@@ -1,31 +1,46 @@
 /**
- * requirement
+ * 
  */
 package de.sfk.spicycurry.data;
 
-import java.util.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import org.eclipse.persistence.annotations.PrimaryKey;
+import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Transient;
+import javax.persistence.Version;
 
 /**
- * requirement is an structured object to describe a feature
+ * persistable specification object
  * 
  * @author boris.schneider
  *
  */
-
-
-@Entity(name="Requirement")
+@Entity(name="Specification")
 @Inheritance(strategy=InheritanceType.JOINED)
-public class Requirement implements Visitable ,Serializable{
+public class Specification implements Visitable ,Serializable{
 
 	@Transient
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	/**
 	 * fields
@@ -50,22 +65,10 @@ public class Requirement implements Visitable ,Serializable{
 	private String customerReqId;
 	
 	@Column(nullable=true, length = 1024)
-	private String customerStatus;
+	private String specificationType;
 	
 	@Column(nullable=true, length = 1024)
-	private String customerType;
-	
-	@Column(nullable=true)
-	private Calendar customerUpdatedOn;
-	
-	@Column(nullable=true, length = 1024)
-	private String updateType;
-	
-	@Column(nullable=true, length = 1024)
-	private String customerReqType;
-	
-	@Column(nullable=true, length = 1024)
-	private String customerRequirementTitle;
+	private String functionality;
 	
 	@Column(nullable=false, length = 5120)
 	private String uri;
@@ -74,10 +77,20 @@ public class Requirement implements Visitable ,Serializable{
 	private String category;
 	
 	@Column(nullable=true, length = 1024)
-	private String status;
+	private String testability;
 	
-	@Column(nullable=false)
-	private boolean tracking; // true if the requirement is a tracking requirement / linked to a feature
+	@Column(nullable=true, length = 1024)
+	private String testAssignee;
+	
+	@Column(nullable=true, length = 1024)
+	private String testWorkgroup;
+	
+	@Column(nullable=true, length = 1024)
+	private String testFeasibility;
+	
+	
+	@Column(nullable=true, length = 1024)
+	private String status;
 	
 	@OneToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name = "feature_id", nullable=true)
@@ -102,28 +115,26 @@ public class Requirement implements Visitable ,Serializable{
 	private Timestamp lastUpdate;
 	
 	@ElementCollection
-	@CollectionTable(name ="Attachments", joinColumns = {@JoinColumn(name = "requirement_id")})
+	@CollectionTable(name ="Attachments", joinColumns = {@JoinColumn(name = "id")})
 	private List<Attachment> attachments = new ArrayList<Attachment>();
 	
-	@ElementCollection
-	private List<String> attachmentIds = new ArrayList<String>();
+	@ElementCollection 
+		private List<String> attachmentIds = new ArrayList<String>();
 	
-	@ElementCollection
-	private List<String> hyperlinks = new ArrayList<String>();
 	
 	@ElementCollection
 	private List<String> markets = new ArrayList<String>();
 	@ElementCollection
 	private List<String> brands = new ArrayList<String>();
 	@ElementCollection
-	private List<String> customerMarkets = new ArrayList<String>();
+	private List<String> supplier = new ArrayList<String>();
 	@ElementCollection
-	private List<String> customerBrands = new ArrayList<String>();
+	private List<String> projectnames = new ArrayList<String>();
 	
 	@Transient
 	// @ManyToMany (cascade= CascadeType.MERGE)
 	// @JoinColumn(name = "requirement_id", nullable=true)
-	private HashMap<String, Requirement> subRequirements = null;
+	private HashMap<String, Specification> subSpecifications = null;
 	
 	@ElementCollection
 	private List<String> linkedDerivedPolarionURIs = new ArrayList<String>();
@@ -137,17 +148,19 @@ public class Requirement implements Visitable ,Serializable{
 	@ElementCollection
 	private List<String> featureIds = new ArrayList<String>();
 	
+	@ElementCollection
+	private List<String> hyperLinks = new ArrayList<String>();
 	/**
 	 * constructor
 	 */
-	public Requirement() {
+	public Specification() {
 		super();
 	}
 	/**
 	 * constructor
 	 * @param id
 	 */
-	public Requirement(String id)
+	public Specification(String id)
 	{
 		super();
 		this.setId(id);
@@ -239,6 +252,42 @@ public class Requirement implements Visitable ,Serializable{
 		this.status = status;
 	}
 	/**
+	 * @return the testWorkgroup
+	 */
+	public String getTestWorkgroup() {
+		return testWorkgroup;
+	}
+	/**
+	 * @return the testFeasibility
+	 */
+	public String getTestFeasibility() {
+		return testFeasibility;
+	}
+	/**
+	 * @param testFeasibility the testFeasibility to set
+	 */
+	public void setTestFeasibility(String testFeasibility) {
+		this.testFeasibility = testFeasibility;
+	}
+	/**
+	 * @param testWorkgroup the testWorkgroup to set
+	 */
+	public void setTestWorkgroup(String testWorkgroup) {
+		this.testWorkgroup = testWorkgroup;
+	}
+	/**
+	 * @return the testAssignee
+	 */
+	public String getTestAssignee() {
+		return testAssignee;
+	}
+	/**
+	 * @param testAssignee the testAssignee to set
+	 */
+	public void setTestAssignee(String testAssignee) {
+		this.testAssignee = testAssignee;
+	}
+	/**
 	 * @return the accepted
 	 */
 	public boolean isAccepted() {
@@ -301,8 +350,32 @@ public class Requirement implements Visitable ,Serializable{
 	/**
 	 * @return the brands
 	 */
+	public List<String> getSuppliers() {
+		return supplier;
+	}
+	/**
+	 * @return the testability
+	 */
+	public String getTestability() {
+		return testability;
+	}
+	/**
+	 * @param testability the testability to set
+	 */
+	public void setTestability(String testability) {
+		this.testability = testability;
+	}
+	/**
+	 * @return the brands
+	 */
 	public List<String> getBrands() {
 		return brands;
+	}
+	/**
+	 * @return the the list of projectnames
+	 */
+	public List<String> getProjectnames() {
+		return projectnames;
 	}
 	/**
 	 * @param brands the brands to set
@@ -311,51 +384,51 @@ public class Requirement implements Visitable ,Serializable{
 		this.brands = brands;
 	}
 	/**
-	 * @return Collection of Requirements - lazy load from Requirementsstore
+	 * @return Collection of Requirements - lazy load from SpecificationStore
 	 */
-	public Collection<Requirement> getSubRequirements() {
-		if (subRequirements == null) RequirementStore.db.getSubRequirements(this);
-		return subRequirements.values();
+	public Collection<Specification> getSubSpecifications() {
+		if (subSpecifications == null) SpecificationStore.db.getSubSpecifications(this);
+		return subSpecifications.values();
 	}
 	/**
-	 * @return Collection of Requirements - lazy load from Requirementsstore
+	 * @return Collection of Requirements - lazy load from SpecificationStore
 	 */
-	public Collection<Requirement> loadSubRequirements() {
-		if (subRequirements == null){ 
-			RequirementStore.db.loadPolarionSubRequirements(this, null);
+	public Collection<Specification> loadSubSpecifications() {
+		if (subSpecifications == null){ 
+			SpecificationStore.db.loadPolarionSubSpecifications(this, null);
 		}
-		return subRequirements.values();
+		return subSpecifications.values();
 	}
 	/**
 	 * @return Collection of Requirements
 	 */
-	public void clearSubRequirements() {
+	public void clearSubSpecifications() {
 		
-		if (this.subRequirements == null)
-				 this.subRequirements= new HashMap<String, Requirement>();
-		else this.subRequirements.clear();
+		if (this.subSpecifications == null)
+				 this.subSpecifications= new HashMap<String, Specification>();
+		else this.subSpecifications.clear();
 	}
 	/**
 	 * @param descendants the descendants to set
 	 */
 	@SuppressWarnings("unused")
-	private void setRequirements(HashMap<String, Requirement> descendants) {
-		this.subRequirements = descendants;
+	private void setSpecifications(HashMap<String, Specification> descendants) {
+		this.subSpecifications = descendants;
 	}
 	/**
-	 * add sub requirement
-	 * @param req
+	 * add sub specification
+	 * @param specification
 	 */
-	public void addRequirement(Requirement req) {
+	public void addSpecification(Specification specification) {
 		// Initialize
-		if (this.subRequirements == null) this.clearSubRequirements();
+		if (this.subSpecifications == null) this.clearSubSpecifications();
 		
-		if (!this.subRequirements.containsKey(req.getId())) {
+		if (!this.subSpecifications.containsKey(specification.getId())) {
 			// add the child
-			this.subRequirements.put(req.getId(), req);
+			this.subSpecifications.put(specification.getId(), specification);
 			// add the top level features from me to the child
 			for (Feature aFeature: this.getFeatures()) {
-				req.addFeature(aFeature);
+				specification.addFeature(aFeature);
 			}
 		}
 	}
@@ -399,6 +472,17 @@ public class Requirement implements Visitable ,Serializable{
 		}
 	}
 	/**
+	 * add a hyperlink
+	 * @param req
+	 */
+	public void addHyperlink(String id) {
+				
+		if (!this.hyperLinks.contains(id)) {
+			// add the child
+			this.hyperLinks.add(id);
+		}
+	}
+	/**
 	 * add upwards polarion link uri
 	 * @param req
 	 */
@@ -438,6 +522,14 @@ public class Requirement implements Visitable ,Serializable{
 		if (!this.features.contains(feature)) this.features.add(feature);
 		if (this.featureIds == null) this.featureIds = new ArrayList<String>();
 		if (!this.featureIds.contains(feature.getId())) this.featureIds.add(feature.getId());
+	}
+	/**
+	 * add the feature id without adding the feature by itself
+	 * @param id
+	 */
+	public void addFeatureID(String id){
+		if (this.featureIds == null) this.featureIds = new ArrayList<String>();
+		if (!this.featureIds.contains(id)) this.featureIds.add(id);
 	}
 	/**
 	 * @return the responsible
@@ -487,16 +579,13 @@ public class Requirement implements Visitable ,Serializable{
 		if (!this.attachmentIds.contains(anAttachment.getId())) this.attachmentIds.add(anAttachment.getId());
 	}
 	/**
-	 * add a hyperlink
-	 * @param req
+	 * add a supplier
+	 * @param supplier
 	 */
-	public void addHyperlink(String id) {
-				
-		if (!this.hyperlinks.contains(id)) {
-			// add the child
-			this.hyperlinks.add(id);
-		}
+	public void addSupplier(String supplier) {
+		if (!this.supplier.contains(supplier)) this.supplier.add(supplier);
 	}
+	
 	/**
 	 * add a brand
 	 * @param brand
@@ -504,12 +593,13 @@ public class Requirement implements Visitable ,Serializable{
 	public void addBrand(String brand) {
 		if (!this.brands.contains(brand)) this.brands.add(brand);
 	}
+	
 	/**
-	 * add a customer brand
-	 * @param market
+	 * add a projectname
+	 * @param projectname
 	 */
-	public void addCustomerBrand(String brand) {
-		if (!this.customerBrands.contains(brand)) this.customerBrands.add(brand);
+	public void addProjectname(String projectname) {
+		if (!this.projectnames.contains(projectname)) this.projectnames.add(projectname);
 	}
 	/**
 	 * add a market
@@ -518,13 +608,7 @@ public class Requirement implements Visitable ,Serializable{
 	public void addMarket(String market) {
 		if (!this.markets.contains(market)) this.markets.add(market);
 	}
-	/**
-	 * add a customer market
-	 * @param market
-	 */
-	public void addCustomerMarket(String market) {
-		if (!this.customerMarkets.contains(market)) this.customerMarkets.add(market);
-	}
+	
 	/**
 	 * @return the uri
 	 */
@@ -585,93 +669,32 @@ public class Requirement implements Visitable ,Serializable{
 	public void setSourceID(String sourceID) {
 		this.sourceID = sourceID;
 	}
-	/**
-	 * @return the customerstatus
-	 */
-	public String getCustomerStatus() {
-		return customerStatus;
-	}
-	/**
-	 * @param customerstatus the customerstatus to set
-	 */
-	public void setCustomerStatus(String customerstatus) {
-		this.customerStatus = customerstatus;
-	}
-	/**
-	 * @return the customerType
-	 */
-	public String getCustomerType() {
-		return customerType;
-	}
-	/**
-	 * @param customerType the customerType to set
-	 */
-	public void setCustomerType(String customerType) {
-		this.customerType = customerType;
-	}
+	
 	/**
 	 * @return the customerReqType
 	 */
-	public String getCustomerReqType() {
-		return customerReqType;
+	public String getFunctionality() {
+		return functionality;
 	}
 	/**
 	 * @param customerReqType the customerReqType to set
 	 */
-	public void setCustomerReqType(String customerReqType) {
-		this.customerReqType = customerReqType;
+	public void setFunctionality(String functionality) {
+		this.functionality = functionality;
 	}
 	/**
-	 * @return the updateType
+	 * @return the specificationType
 	 */
-	public String getUpdateType() {
-		return updateType;
+	public String getSpecificationType() {
+		return specificationType;
 	}
 	/**
-	 * @param updateType the updateType to set
+	 * @param specificationType
 	 */
-	public void setUpdateType(String updateType) {
-		this.updateType = updateType;
-	}
-	/**
-	 * @return the outline
-	 */
-	public boolean isOutline() {
-		if (this.customerReqType != null && this.customerReqType.equalsIgnoreCase("heading")) return true;
-		return false;
-	}
-	/**
-	 * @return the outline
-	 */
-	public boolean isInformation() {
-		if (this.customerReqType != null && this.customerReqType.equalsIgnoreCase("information")) return true;
-		return false;
+	public void setSpecificationType(String type) {
+		this.specificationType = type;
 	}
 	
-	/**
-	 * @return the customerUpdatedOn
-	 */
-	public Calendar getCustomerUpdatedOn() {
-		return customerUpdatedOn;
-	}
-	/**
-	 * @param customerUpdatedOn the customerUpdatedOn to set
-	 */
-	public void setCustomerUpdatedOn(Calendar customerUpdatedOn) {
-		this.customerUpdatedOn = customerUpdatedOn;
-	}
-	/**
-	 * @return the customerRequirementTitle
-	 */
-	public String getCustomerRequirementTitle() {
-		return customerRequirementTitle;
-	}
-	/**
-	 * @param customerRequirementTitle the customerRequirementTitle to set
-	 */
-	public void setCustomerRequirementTitle(String customerRequirementTitle) {
-		this.customerRequirementTitle = customerRequirementTitle;
-	}
 	/**
 	 * visitor-pattern visit by accept 
 	 */
@@ -697,3 +720,4 @@ public class Requirement implements Visitable ,Serializable{
 		return false;
 	}
 }
+

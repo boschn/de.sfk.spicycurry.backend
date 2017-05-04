@@ -18,5 +18,11 @@ public interface Visitor {
 	  * @param r
 	  */
 	 public void visit(Requirement r);
+	 
+	 /**
+	  * visit a Specification
+	  * @param r
+	  */
+	 public void visit(Specification s);
 
 }

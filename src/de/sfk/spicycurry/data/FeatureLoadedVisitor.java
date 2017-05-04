@@ -34,4 +34,16 @@ public class FeatureLoadedVisitor implements Visitor {
 
 	}
 
+	/**
+	 * visit a specification
+	 */
+	@Override
+	public void visit(Specification s) {
+		
+		System.out.printf("\t Specification: '%s'- '%s'\n", s.getId(),s.getDescription());
+		// visit all requirements
+		for(Visitable v: s.getSubSpecifications()) 
+			v.accept(this);
+
+	}
 }

@@ -15,7 +15,7 @@
       </Policies>
     </RollingFile> 
     <Socket name="jlv" host="localhost" port="4445"
-            bufferedIO="true" reconnectionDelayMillis = "100"
+            bufferedIO="true" reconnectionDelayMillis = "5000"
     />
   </Appenders>
   <Loggers>

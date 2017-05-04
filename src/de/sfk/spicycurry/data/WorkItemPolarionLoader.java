@@ -465,125 +465,311 @@ public class WorkItemPolarionLoader implements Closeable {
 		 */
 		public Requirement convertToRequirement(WorkItem item, Requirement requirement){
 		
-			if (requirement == null) requirement = new Requirement(item.getId());
-			
-			// get all Default fields
-			
-			if (item.getDescription() != null) requirement.setDescription(getSimpleValue(item.getDescription()));
-			else requirement.setDescription("");
-			
-			requirement.setTitle(item.getTitle());
-			requirement.setPolarionUri(item.getUri());
-			requirement.setCreatedOn(item.getCreated());
-			requirement.setUpdatedOn(item.getCreated());
-			requirement.setAuthor(item.getAuthor().getId());
-			requirement.setStatus(item.getStatus().getId());
-			
-			// Hack
-			if (item.getAssignee().length >0) requirement.setAssignee(item.getAssignee()[0].getName());
-			
-			// get Attachments 
-			if (item.getAttachments() != null)
-				for (com.polarion.alm.ws.client.types.tracker.Attachment anAttachment: item.getAttachments()){
-					requirement.addAttachment(anAttachment.getId(), anAttachment.getUrl(), anAttachment.getFileName(), anAttachment.getUri());
-				}
-			
-			// get all links
-			if (item.getLinkedWorkItemsDerived() != null)
-				for (LinkedWorkItem anItem: item.getLinkedWorkItemsDerived()){
-					requirement.addDerivedPolarionURI(anItem.getWorkItemURI());
-				}
-			if (item.getLinkedWorkItems() != null)
-				for (LinkedWorkItem anItem: item.getLinkedWorkItems()){
-					requirement.addLinkedPolarionURI(anItem.getWorkItemURI());
-				}
-			// copy all custom fields
-			for (Custom aCustomField : item.getCustomFields()){
+			try {
+				if (requirement == null) requirement = new Requirement(item.getId());
 				
-				if (aCustomField.getKey().equalsIgnoreCase("idKA"))
-					requirement.setCustomerRequirementId(aCustomField.getValue().toString());
+				// get all Default fields
 				
-				if (aCustomField.getKey().equalsIgnoreCase("titleKA"))
-					requirement.setCustomerRequirementTitle(aCustomField.getValue().toString());
+				if (item.getDescription() != null) requirement.setDescription(getSimpleValue(item.getDescription()));
+				else requirement.setDescription("");
 				
-				if (aCustomField.getKey().equalsIgnoreCase("customerType"))
-					requirement.setCustomerType(aCustomField.getValue().toString());
+				requirement.setTitle(item.getTitle());
+				requirement.setPolarionUri(item.getUri());
+				requirement.setCreatedOn(item.getCreated());
+				requirement.setUpdatedOn(item.getCreated());
+				requirement.setAuthor(item.getAuthor().getId());
+				requirement.setStatus(item.getStatus().getId());
 				
-				if (aCustomField.getKey().equalsIgnoreCase("sourceModule"))
-					requirement.setSourceModule(aCustomField.getValue().toString());
+				// Hack
+				if (item.getAssignee().length >0) requirement.setAssignee(item.getAssignee()[0].getName());
 				
-				if (aCustomField.getKey().equalsIgnoreCase("identification"))
-					requirement.setSourceID(aCustomField.getValue().toString());
+				// get Attachments 
+				if (item.getAttachments() != null)
+					for (com.polarion.alm.ws.client.types.tracker.Attachment anAttachment: item.getAttachments()){
+						requirement.addAttachment(anAttachment.getId(), anAttachment.getUrl(), anAttachment.getFileName(), anAttachment.getUri());
+					}
 				
-				if ((aCustomField.getKey().equalsIgnoreCase("descKA")) || (aCustomField.getKey().equalsIgnoreCase("rif_Specific_1st-Tier")))
-					if (requirement.getDescription()!= null)
-						requirement.setDescription(requirement.getDescription() + "\n" + (String) ((Text) aCustomField.getValue()).getContent());
-					else requirement.setDescription((String) ((Text) aCustomField.getValue()).getContent());
-				
-				if (aCustomField.getKey().equalsIgnoreCase("OPL_Responsible_1st-Tier")){
-					if (getSimpleValue(aCustomField.getValue()).equalsIgnoreCase("rif_responsible")) 
-							requirement.setResponsible(true);
-				}
-				
-				if (aCustomField.getKey().equalsIgnoreCase("rif_OPL_Status_OEM_1st-Tier")){
-					if (getSimpleValue(aCustomField.getValue()).equalsIgnoreCase("rif_accepted")) 
-							requirement.setAccepted(true);
-				}
-				
-				if (aCustomField.getKey().equalsIgnoreCase("kategorien"))
-					requirement.setCategory(getSimpleValue(aCustomField.getValue()));
-				
-				if (aCustomField.getKey().equalsIgnoreCase("customreqformKA"))
-					requirement.setCustomerReqType((getSimpleValue(aCustomField.getValue())));
-				
-				if (aCustomField.getKey().equalsIgnoreCase("updateType"))
-					if (aCustomField.getValue()!= null) 
-						requirement.setUpdateType((getSimpleValue(aCustomField.getValue())));
-				
-				if (aCustomField.getKey().equalsIgnoreCase("rif_lastUpdateKA")){
-					Calendar aCal = Calendar.getInstance();
-					String aString = (String) aCustomField.getValue();
+				// get Hyperlinks 
+				if (item.getHyperlinks() != null)
+					for (com.polarion.alm.ws.client.types.tracker.Hyperlink aHyperlink: item.getHyperlinks()){
+						requirement.addHyperlink(aHyperlink.getUri());
+					}
+				// get all links
+				if (item.getLinkedWorkItemsDerived() != null)
+					for (LinkedWorkItem anItem: item.getLinkedWorkItemsDerived()){
+						requirement.addDerivedPolarionURI(anItem.getWorkItemURI());
+					}
+				if (item.getLinkedWorkItems() != null)
+					for (LinkedWorkItem anItem: item.getLinkedWorkItems()){
+						requirement.addLinkedPolarionURI(anItem.getWorkItemURI());
+					}
+				// copy all custom fields
+				for (Custom aCustomField : item.getCustomFields()){
 					
-					try {
-						if (aString.indexOf('T')>= 0) {
-							aCal.setTime(isoTimePointFormatter.parse(aString));
-						}else aCal.setTime(germanDateFormatter.parse(aString));
-						requirement.setCustomerUpdatedOn(aCal);
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						logger.error("time not convertable " + aString);
-						if (logger.isDebugEnabled()) e.printStackTrace();
+					if (aCustomField.getKey().equalsIgnoreCase("idKA"))
+						requirement.setCustomerRequirementId(aCustomField.getValue().toString());
+					
+					if (aCustomField.getKey().equalsIgnoreCase("titleKA"))
+						requirement.setCustomerRequirementTitle(aCustomField.getValue().toString());
+					
+					if (aCustomField.getKey().equalsIgnoreCase("customerType"))
+						requirement.setCustomerType(aCustomField.getValue().toString());
+					
+					if (aCustomField.getKey().equalsIgnoreCase("sourceModule"))
+						requirement.setSourceModule(aCustomField.getValue().toString());
+					
+					if (aCustomField.getKey().equalsIgnoreCase("identification"))
+						requirement.setSourceID(aCustomField.getValue().toString());
+					
+					if ((aCustomField.getKey().equalsIgnoreCase("descKA")) || (aCustomField.getKey().equalsIgnoreCase("rif_Specific_1st-Tier")))
+						if (requirement.getDescription()!= null)
+							requirement.setDescription(requirement.getDescription() + "\n" + (String) ((Text) aCustomField.getValue()).getContent());
+						else requirement.setDescription((String) ((Text) aCustomField.getValue()).getContent());
+					
+					if (aCustomField.getKey().equalsIgnoreCase("OPL_Responsible_1st-Tier")){
+						if (getSimpleValue(aCustomField.getValue()).equalsIgnoreCase("rif_responsible")) 
+								requirement.setResponsible(true);
 					}
 					
-				}
+					if (aCustomField.getKey().equalsIgnoreCase("rif_OPL_Status_OEM_1st-Tier")){
+						if (getSimpleValue(aCustomField.getValue()).equalsIgnoreCase("rif_accepted")) 
+								requirement.setAccepted(true);
+					}
 					
+					if (aCustomField.getKey().equalsIgnoreCase("kategorien"))
+						requirement.setCategory(getSimpleValue(aCustomField.getValue()));
+					
+					if (aCustomField.getKey().equalsIgnoreCase("customreqformKA"))
+						requirement.setCustomerReqType((getSimpleValue(aCustomField.getValue())));
+					
+					if (aCustomField.getKey().equalsIgnoreCase("updateType"))
+						if (aCustomField.getValue()!= null) 
+							requirement.setUpdateType((getSimpleValue(aCustomField.getValue())));
+					
+					if (aCustomField.getKey().equalsIgnoreCase("rif_lastUpdateKA")){
+						Calendar aCal = Calendar.getInstance();
+						String aString = (String) aCustomField.getValue();
+						
+						try {
+							if (aString.indexOf('T')>= 0) {
+								aCal.setTime(isoTimePointFormatter.parse(aString));
+							}else aCal.setTime(germanDateFormatter.parse(aString));
+							requirement.setCustomerUpdatedOn(aCal);
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							logger.error("time not convertable " + aString);
+							if (logger.isDebugEnabled()) e.printStackTrace();
+						}
+						
+					}
+						
+					
+					if (aCustomField.getKey().equalsIgnoreCase("validityKA"))
+						requirement.setCustomerStatus(getSimpleValue(aCustomField.getValue()));
+					
+					if (aCustomField.getKey().equalsIgnoreCase("brand"))
+						for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+							requirement.addBrand(anID.getId());
+					
+					if (aCustomField.getKey().equalsIgnoreCase("market"))
+						for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+							requirement.addMarket(anID.getId());
+					
+					if (aCustomField.getKey().equalsIgnoreCase("brandOEM"))
+						for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+							requirement.addCustomerBrand(anID.getId());
+					
+					if (aCustomField.getKey().equalsIgnoreCase("marketOEM"))
+						for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+							requirement.addCustomerMarket(anID.getId());
+				}
 				
-				if (aCustomField.getKey().equalsIgnoreCase("validityKA"))
-					requirement.setCustomerStatus(getSimpleValue(aCustomField.getValue()));
-				
-				if (aCustomField.getKey().equalsIgnoreCase("brand"))
-					for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
-						requirement.addBrand(anID.getId());
-				
-				if (aCustomField.getKey().equalsIgnoreCase("market"))
-					for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
-						requirement.addMarket(anID.getId());
-				
-				if (aCustomField.getKey().equalsIgnoreCase("brandOEM"))
-					for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
-						requirement.addCustomerBrand(anID.getId());
-				
-				if (aCustomField.getKey().equalsIgnoreCase("marketOEM"))
-					for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
-						requirement.addCustomerMarket(anID.getId());
+			} catch (Exception e) {
+				logger.info(e.getLocalizedMessage());
+				if (logger.isDebugEnabled()) logger.catching(e);
 			}
-			
-			
-			
-			// return
 			return requirement;
 		}
+		/**
+		 * returns a specification from a work item  
+		 * @param workItem
+		 * @param specification of an existing specification or null for new feature
+		 * @return a requirement object
+		 */
+		public Specification convertToSpecification(WorkItem item, Specification specification){
 		
+			try {
+				if (specification == null) specification = new Specification(item.getId());
+				
+				// get all Default fields
+				
+				if (item.getDescription() != null) specification.setDescription(getSimpleValue(item.getDescription()));
+				else specification.setDescription("");
+				
+				specification.setTitle(item.getTitle());
+				specification.setPolarionUri(item.getUri());
+				specification.setCreatedOn(item.getCreated());
+				specification.setUpdatedOn(item.getCreated());
+				specification.setAuthor(item.getAuthor().getId());
+				specification.setStatus(item.getStatus().getId());
+				
+				// Hack
+				if (item.getAssignee().length >0) specification.setAssignee(item.getAssignee()[0].getName());
+				
+				// get Attachments 
+				if (item.getAttachments() != null)
+					for (com.polarion.alm.ws.client.types.tracker.Attachment anAttachment: item.getAttachments()){
+						specification.addAttachment(anAttachment.getId(), anAttachment.getUrl(), anAttachment.getFileName(), anAttachment.getUri());
+					}
+				
+				// get Hyperlinks 
+				if (item.getHyperlinks() != null)
+					for (com.polarion.alm.ws.client.types.tracker.Hyperlink aHyperlink: item.getHyperlinks()){
+						specification.addHyperlink(aHyperlink.getUri());
+					}
+				// get all links
+				if (item.getLinkedWorkItemsDerived() != null)
+					for (LinkedWorkItem anItem: item.getLinkedWorkItemsDerived()){
+						specification.addDerivedPolarionURI(anItem.getWorkItemURI());
+					}
+				if (item.getLinkedWorkItems() != null)
+					for (LinkedWorkItem anItem: item.getLinkedWorkItems()){
+						specification.addLinkedPolarionURI(anItem.getWorkItemURI());
+					}
+				// copy all custom fields
+				for (Custom aCustomField : item.getCustomFields()){
+					
+					if (aCustomField.getKey().equalsIgnoreCase("idKA"))
+						specification.setCustomerRequirementId(getSimpleValue(aCustomField.getValue()));
+					
+					if (aCustomField.getKey().equalsIgnoreCase("reqform"))
+						specification.setSpecificationType(getSimpleValue(aCustomField.getValue()));
+					
+					if (aCustomField.getKey().equalsIgnoreCase("sourceModule"))
+						specification.setSourceModule(getSimpleValue(aCustomField.getValue()));
+					
+					if (aCustomField.getKey().equalsIgnoreCase("identification"))
+						specification.setSourceID(getSimpleValue(aCustomField.getValue()));
+					
+					if ((aCustomField.getKey().equalsIgnoreCase("descKA")) || (aCustomField.getKey().equalsIgnoreCase("rif_Specific_1st-Tier")))
+						if (specification.getDescription()!= null)
+							specification.setDescription(specification.getDescription() + "\n" + (String) ((Text) aCustomField.getValue()).getContent());
+						else specification.setDescription((String) ((Text) aCustomField.getValue()).getContent());
+					
+					
+					if (aCustomField.getKey().equalsIgnoreCase("kategorien"))
+						specification.setCategory(getSimpleValue(aCustomField.getValue()));
+				
+					if (aCustomField.getKey().equalsIgnoreCase("functionality")){
+						if (aCustomField.getValue() instanceof String || aCustomField.getValue() instanceof EnumOptionId)
+						{
+							String[] theParts = getSimpleValue(aCustomField.getValue()).split(" ");
+							for(String anId: theParts) specification.setFunctionality(anId);
+						}else if (aCustomField.getValue().getClass() == EnumOptionId[].class)
+								for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+										specification.setFunctionality(getSimpleValue(anID));
+						else if (aCustomField.getValue().getClass() == String[].class)
+							for(String anID: (String [])aCustomField.getValue())
+									specification.setFunctionality(anID);
+					}
+					
+					if (aCustomField.getKey().equalsIgnoreCase("testability")){
+						if (aCustomField.getValue() instanceof String || aCustomField.getValue() instanceof EnumOptionId)
+						{
+							String[] theParts = getSimpleValue(aCustomField.getValue()).split(" ");
+							for(String anId: theParts) specification.setTestability(anId);
+						}else if (aCustomField.getValue().getClass() == EnumOptionId[].class)
+								for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+										specification.setTestability(getSimpleValue(anID));
+						else if (aCustomField.getValue().getClass() == String[].class)
+							for(String anID: (String [])aCustomField.getValue())
+									specification.setTestability(anID);
+					}
+					if (aCustomField.getKey().equalsIgnoreCase("feasibilityTest")){
+						if (aCustomField.getValue() instanceof String || aCustomField.getValue() instanceof EnumOptionId)
+						{
+							String[] theParts = getSimpleValue(aCustomField.getValue()).split(" ");
+							for(String anId: theParts) specification.setTestFeasibility(anId);
+						}else if (aCustomField.getValue().getClass() == EnumOptionId[].class)
+								for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+										specification.setTestFeasibility(getSimpleValue(anID));
+						else if (aCustomField.getValue().getClass() == String[].class)
+							for(String anID: (String [])aCustomField.getValue())
+									specification.setTestFeasibility(anID);
+					}
+					if (aCustomField.getKey().equalsIgnoreCase("assigneeTest")){
+						if (aCustomField.getValue() instanceof String || aCustomField.getValue() instanceof EnumOptionId)
+						{
+							String[] theParts = getSimpleValue(aCustomField.getValue()).split(" ");
+							for(String anId: theParts) specification.setTestAssignee(anId);
+						}else if (aCustomField.getValue().getClass() == EnumOptionId[].class)
+								for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+										specification.setTestAssignee(getSimpleValue(anID));
+						else if (aCustomField.getValue().getClass() == String[].class)
+							for(String anID: (String [])aCustomField.getValue())
+									specification.setTestAssignee(anID);
+					}
+					if (aCustomField.getKey().equalsIgnoreCase("kategorieTest")){
+						if (aCustomField.getValue() instanceof String || aCustomField.getValue() instanceof EnumOptionId)
+						{
+							String[] theParts = getSimpleValue(aCustomField.getValue()).split(" ");
+							for(String anId: theParts) specification.setTestWorkgroup(anId);
+						}else if (aCustomField.getValue().getClass() == EnumOptionId[].class)
+								for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+										specification.setTestWorkgroup(getSimpleValue(anID));
+						else if (aCustomField.getValue().getClass() == String[].class)
+							for(String anID: (String [])aCustomField.getValue())
+									specification.setTestWorkgroup(anID);
+					}
+					if (aCustomField.getKey().equalsIgnoreCase("FEAT-ID"))
+					{
+						if (aCustomField.getValue() instanceof String || aCustomField.getValue() instanceof EnumOptionId)
+						{
+							String[] theParts = getSimpleValue(aCustomField.getValue()).split(" ");
+							for(String anId: theParts) specification.addFeatureID(anId);
+						}else if (aCustomField.getValue().getClass() == EnumOptionId[].class)
+								for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+										specification.addFeatureID(getSimpleValue(anID.getId()));
+						else if (aCustomField.getValue().getClass() == String[].class)
+							for(String anID: (String [])aCustomField.getValue())
+									specification.addFeatureID(anID);
+					}
+					
+					if (aCustomField.getKey().equalsIgnoreCase("supplier"))
+						for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+							specification.addSupplier(anID.getId());
+					
+					if (aCustomField.getKey().equalsIgnoreCase("brand"))
+						for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+							specification.addBrand(anID.getId());
+					
+					if (aCustomField.getKey().equalsIgnoreCase("projectValidity"))
+					{
+						if (aCustomField.getValue() instanceof String || aCustomField.getValue() instanceof EnumOptionId)
+							specification.addProjectname(getSimpleValue(aCustomField.getValue()));
+						else if (aCustomField.getValue().getClass() == EnumOptionId[].class)
+							for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+								specification.addProjectname(getSimpleValue(anID.getId()));
+						else if (aCustomField.getValue().getClass() == String[].class)
+							for(String anID: (String [])aCustomField.getValue())
+									specification.addProjectname(anID);
+					}
+					
+					if (aCustomField.getKey().equalsIgnoreCase("market"))
+						for(EnumOptionId anID: (EnumOptionId [])aCustomField.getValue())
+							specification.addMarket(anID.getId());
+					
+				}
+				
+				
+			} catch (Exception e) {
+				logger.info(e.getLocalizedMessage());
+				if (logger.isDebugEnabled()) logger.catching(e);
+			}
+			
+			// return
+			return specification;
+		}
 		/**
 		 * convertToFeature
 		 * 

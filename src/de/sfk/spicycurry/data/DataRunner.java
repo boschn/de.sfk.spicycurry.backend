@@ -37,12 +37,14 @@ public class DataRunner {
 				logger.info(FeatureStore.db.count() + " features loaded from polarion");
 			}
 			
-			if (RequirementStore.db.has("1010-MIB3-ALG-57871")){ 
+			/* if (RequirementStore.db.has("1010-MIB3-ALG-57871")){ 
 					RequirementStore.db.loadPolarion("1010-MIB3-ALG-57871");
 					logger.info("1010-MIB3-ALG-57871 loaded from polarion");
+					logger.info(RequirementStore.db.count() + " requirements loaded from polarion");
 			}
-			
-			logger.info(RequirementStore.db.count() + " requirements loaded from polarion");
+			*/
+			SpecificationStore.db.loadAllPolarion();
+			logger.info(SpecificationStore.db.count() + " specifications loaded from polarion");
 			
 			Feature[] theFeatures=FeatureStore.db.all().toArray(new Feature[FeatureStore.db.all().size()]);
 			
@@ -79,6 +81,9 @@ public class DataRunner {
 			
 			RequirementStore.db.loadAllPolarion(changedSince); 
 			logger.info(RequirementStore.db.count() + " requirements loaded from polarion");
+			
+			SpecificationStore.db.loadAllPolarion(changedSince); 
+			logger.info(SpecificationStore.db.count() + " specifications loaded from polarion");
 			
 			logger.info("runner full polarion feed ended");
 			
