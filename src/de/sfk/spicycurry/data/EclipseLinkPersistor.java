@@ -5,9 +5,6 @@ package de.sfk.spicycurry.data;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 /**
