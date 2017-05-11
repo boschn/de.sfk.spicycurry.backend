@@ -14,9 +14,9 @@
         <SizeBasedTriggeringPolicy size="20 MB"/>
       </Policies>
     </RollingFile> 
-    <Socket name="jlv" host="localhost" port="4445"
+    <!--  Socket name="jlv" host="localhost" port="4445"
             bufferedIO="true" reconnectionDelayMillis = "5000"
-    />
+    /-->
   </Appenders>
   <Loggers>
    <Root level="ERROR">
@@ -26,15 +26,15 @@
     <logger name="de.sfk" level="TRACE"  additivity="false">
   		<AppenderRef ref="Console"/>
   		<AppenderRef ref="FileLogger"/>
-  		<AppenderRef ref="jlv"/>
+  		<!-- AppenderRef ref="jlv"/ -->
   	</logger>
     <logger name="org" level="DEBUG"  additivity="false">
   		<AppenderRef ref="FileLogger"/>
-  		<AppenderRef ref="jlv"/>
+  		<!-- AppenderRef ref="jlv"/-->
   	</logger>
   	    <logger name="com" level="DEBUG" additivity="false">
   		<AppenderRef ref="FileLogger"/>
-  		<AppenderRef ref="jlv"/>
+  		<!-- AppenderRef ref="jlv"/-->
   	</logger>
   	
   </Loggers>
