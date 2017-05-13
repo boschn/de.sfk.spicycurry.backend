@@ -3,10 +3,17 @@
  */
 package de.sfk.spicycurry.data;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.persistence.config.PersistenceUnitProperties;
+
+import de.sfk.spicycurry.Setting;
 /**
  * persistor class for eclipseLink
  * 
@@ -43,8 +50,25 @@ public class EclipseLinkPersistor extends AbstractPersistor implements IPersisto
 	 */
 	@Override
 	public void Open() {
-		if ((emf == null) || !emf.isOpen()) 
-			emf = Persistence.createEntityManagerFactory(persistenceProvider);
+		// if we started earlier an server to reset properties to reach the own server
+		// maybe that in persistence.xml is something else specified
+		if ((emf == null) || !emf.isOpen()){
+			if (Globals.DBServer.isServerRunning()){
+				Map props = new HashMap();
+				// set the correct properties
+				
+				props.put(PersistenceUnitProperties.JDBC_URL, Globals.DBServer.getJDBCUrl());
+				props.put(PersistenceUnitProperties.JDBC_USER, "sa");
+				props.put(PersistenceUnitProperties.JDBC_PASSWORD, "");
+
+				emf = Persistence.createEntityManagerFactory("pu-name", props);
+			} else {
+				// default entity manager factory by persistence.xml
+				emf = Persistence.createEntityManagerFactory(persistenceProvider);
+			}
+
+		}
+		// get the entity manager
 		if ((em == null) || !em.isOpen()) 
 			em = emf.createEntityManager();
 		

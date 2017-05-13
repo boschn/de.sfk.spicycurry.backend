@@ -12,6 +12,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import com.polarion.alm.ws.client.types.tracker.WorkItem;
 
+import de.sfk.spicycurry.Setting;
+
 /**
  * class stores the features 
  * 

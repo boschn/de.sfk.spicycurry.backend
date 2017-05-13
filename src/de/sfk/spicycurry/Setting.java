@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.sfk.spicycurry.data;
+package de.sfk.spicycurry;
 
 import java.io.FileReader;
 import java.io.FileWriter;

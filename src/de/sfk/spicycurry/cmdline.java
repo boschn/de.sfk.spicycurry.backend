@@ -4,7 +4,8 @@
 package de.sfk.spicycurry;
 
 import de.sfk.spicycurry.data.DataRunner;
-import de.sfk.spicycurry.data.Setting;
+import de.sfk.spicycurry.data.Globals;
+import de.sfk.spicycurry.server.H2Server;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,9 +31,11 @@ public class cmdline {
 	public static final String cmdTest = "t";
 	public static final String cmdHelp = "h";
 	public static final String cmdProperty = "p";
+	public static final String cmdAutoServer = "s";
 	
 	private static final String cmdOptionChangedSinceDate = "changedSinceDate";
-	private static final String ArgumentPropertyFileName = "filename";
+	private static final String cmdOptionPropertyFileName = "filename";
+	private static final String cmdOptionServerType = "serverType";
 	// log
 	private static Logger logger = LogManager.getLogger();
 	
@@ -69,6 +72,29 @@ public class cmdline {
 					Setting.Default.read(filename);
 				} else Setting.Default.read(null);
 			}
+			// command feed
+			if (cmd.hasOption(cmdline.cmdAutoServer)) {
+				String serverType = null;
+				if (cmd.getOptionValue(cmdAutoServer)!=null){
+					// TO-DO -> no other Servers implemented
+					serverType = cmd.getOptionValue(cmdAutoServer);
+					Globals.DBServer = new H2Server();
+				}else
+					// default
+					Globals.DBServer = new H2Server();
+				
+				// run even with null date -> full feed
+				if (!Globals.DBServer.probeServer()) { 
+					// start the server and also set the jdbc connection
+					if (Globals.DBServer.startServer()) {
+						logger.debug("db server at " + Globals.DBServer.getAddress() + " started");
+					}
+				} else logger.info("server '" + Globals.DBServer.getAddress()+ " running");
+				
+				// runflag
+				aRunflag = true;
+			}
+							
 			// command feed
 			if (cmd.hasOption(cmdline.cmdFeed)) {
 				Date aChangedDate = null;
@@ -126,7 +152,7 @@ public class cmdline {
 			    .required(false)
 			    .desc( "name and location of the property file"  )
 			    .hasArg()
-			    .argName(ArgumentPropertyFileName)
+			    .argName(cmdOptionPropertyFileName)
 			    .build();
 		theOptions.addOption(commandProperty);
 
@@ -138,6 +164,18 @@ public class cmdline {
 			    .build();
 		theOptions.addOption(commandTest);
 
+		// command autoserver
+		Option commandAutoServer = Option.builder(cmdline.cmdAutoServer)
+			    .longOpt( "autoserver" )
+			    .required(false)
+			    .desc( "automatically start a database server"  )
+			    .numberOfArgs(1)
+			    .optionalArg(true)
+			    .argName(cmdline.cmdOptionServerType)
+			    .type(String.class)
+			    .required(false)
+			    .build();
+		theOptions.addOption(commandAutoServer);
 		
 		// command feed
 		Option commandFeed = Option.builder(cmdline.cmdFeed)
