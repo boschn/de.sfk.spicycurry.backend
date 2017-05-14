@@ -54,17 +54,25 @@ public class EclipseLinkPersistor extends AbstractPersistor implements IPersisto
 		// maybe that in persistence.xml is something else specified
 		if ((emf == null) || !emf.isOpen()){
 			if (Globals.DBServer.isServerRunning()){
-				Map props = new HashMap();
+				Map<String,String> props = new HashMap<String,String>();
 				// set the correct properties
 				
 				props.put(PersistenceUnitProperties.JDBC_URL, Globals.DBServer.getJDBCUrl());
 				props.put(PersistenceUnitProperties.JDBC_USER, "sa");
 				props.put(PersistenceUnitProperties.JDBC_PASSWORD, "");
+				props.put(PersistenceUnitProperties.JDBC_DRIVER, Globals.DBServer.getJDBCDriverName());
 
-				emf = Persistence.createEntityManagerFactory("pu-name", props);
+				emf = Persistence.createEntityManagerFactory(persistenceProvider, props);
+				if (logger.isDebugEnabled()) 
+						logger.info("JDBC settings to local embedded TCP server " + Globals.DBServer.getAddress());
+				
 			} else {
+				
 				// default entity manager factory by persistence.xml
 				emf = Persistence.createEntityManagerFactory(persistenceProvider);
+				if (logger.isDebugEnabled()) 
+					logger.info("JDBC settings of " + emf);
+	
 			}
 
 		}

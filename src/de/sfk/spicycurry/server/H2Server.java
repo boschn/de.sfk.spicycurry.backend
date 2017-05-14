@@ -41,6 +41,10 @@ public class H2Server extends AbstractDBServer {
 	private static final String defaultFileName = "dbserver.lock";
 	// PropertyName for default Port
 	private static final String PROPERTY_H2_DATABASE_PORT = "H2.PORT";
+	// driver name
+	public static final String PROPERTY_H2_JDBC_DRIVER = "H2.JDBC_DRIVER";
+	// defaultdriver
+	public static final String defaultJDBCDriver = "org.h2.driver";
 	
 	// H2 Server
 	private Server server = null;
@@ -51,6 +55,8 @@ public class H2Server extends AbstractDBServer {
 	private String databaseId ;
 	// the dartabase file
 	private String databaseFile;
+	// the driver name
+	private String databaseJDBCDriver;
 	
 	// logger
 	private static Logger logger = LogManager.getLogger(H2Server.class);
@@ -72,7 +78,9 @@ public class H2Server extends AbstractDBServer {
 		}
 		String databasePath = Setting.Default.get(AbstractPersistor.PROPERTY_PERSISTOR_DATABASE_PATH, defaultPath.toString());
 		String databaseName = Setting.Default.get(AbstractPersistor.PROPERTY_PERSISTOR_DATABASE_NAME, defaultDatabaseName);
+		String driverClassName = Setting.Default.get(this.PROPERTY_H2_JDBC_DRIVER, this.defaultJDBCDriver);
 		
+		setJDBCDriverName(driverClassName);
 		setId(databaseName);
 		setAutoServerPort(port);
 		setDatabaseFile(databasePath + "/" + databaseName);
@@ -87,6 +95,9 @@ public class H2Server extends AbstractDBServer {
 		setId(Id);
 		setAutoServerPort(port);
 		setDatabaseFile(databasefile);
+		String driverClassName = Setting.Default.get(this.PROPERTY_H2_JDBC_DRIVER, this.defaultJDBCDriver);
+		setJDBCDriverName(driverClassName);
+		
 	}
 
 	/**
@@ -135,6 +146,18 @@ public class H2Server extends AbstractDBServer {
 		this.databaseFile = databaseName;
 	}
 
+	/**
+	 * @return the databaseJDBCDriver
+	 */
+	public synchronized String getJDBCDriverName() {
+		return databaseJDBCDriver;
+	}
+	/**
+	 * @param databaseJDBCDriver the databaseJDBCDriver to set
+	 */
+	public synchronized void setJDBCDriverName(String databaseJDBCDriver) {
+		this.databaseJDBCDriver = databaseJDBCDriver;
+	}
 	/**
 	 * start the server with the default id
 	 * @return

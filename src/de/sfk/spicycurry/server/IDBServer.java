@@ -45,4 +45,9 @@ public interface IDBServer {
 	 * @return
 	 */
 	String getId();
+	/**
+	 * gets the driver class name 
+	 * @return
+	 */
+	String getJDBCDriverName();
 }
