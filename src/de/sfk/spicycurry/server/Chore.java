@@ -42,7 +42,7 @@ public class Chore extends Bean{
 	// job
 	public enum JobType {
 		Update,
-		Nothing
+		Nothing, FullFeed
 	}
 	
 	// status
@@ -228,10 +228,11 @@ public class Chore extends Bean{
 		this.lastStatus = lastStatus;
 	}
 	/**
-	 * run an full update of an Object
-	 * @return
+	 * run an update of all the objects specified
+	 * @param lastChangeReferenceDate : if not null incremental update
+	 * @return true on success
 	 */
-	public boolean runUpdate(Temporal changeDate){
+	public boolean runUpdate(Temporal lastChangeReferenceDate){
 		
 		try {
 			String ClazzName = this.getArguments().get(0);
@@ -240,7 +241,7 @@ public class Chore extends Bean{
 			
 			// check on the object
 			if (ClazzName.toUpperCase().contains(Requirement.class.getName().toUpperCase())) {
-				if (RequirementStore.db.loadAllPolarion(changeDate)){
+				if (RequirementStore.db.loadAllPolarion(lastChangeReferenceDate)){
 					return true;
 				}else {
 					this.lastLog = "polarion load failed - see log file";
@@ -248,7 +249,7 @@ public class Chore extends Bean{
 				}
 			}else
 			if (ClazzName.toUpperCase().contains(Specification.class.getName().toUpperCase())) {
-				if (RequirementStore.db.loadAllPolarion(changeDate)) {
+				if (RequirementStore.db.loadAllPolarion(lastChangeReferenceDate)) {
 						this.lastLog = "polarion load succeeded";
 						return true;
 				}else {
@@ -258,7 +259,7 @@ public class Chore extends Bean{
 			}else
 			if (ClazzName.toUpperCase().contains(Feature.class.getName().toUpperCase())) {
 				if (ForeignStore.toUpperCase().contains("POLARION")){
-					if (RequirementStore.db.loadAllPolarion(changeDate)){
+					if (RequirementStore.db.loadAllPolarion(lastChangeReferenceDate)){
 						this.lastLog = "polarion load succeeded";
 						return true;
 					}else {
@@ -290,16 +291,16 @@ public class Chore extends Bean{
 	 * run the chore
 	 * @return true if run
 	 */
-	public boolean run(Temporal changeDate) {
-		
+	public boolean run(Temporal newRunTimestamp) {
+		Temporal changeReferenceDate = null;
 		boolean result = false;
 		
 		// check if the chore is due
 		if (this.getLastExecuted() != null) {
 			// set the incremental change date to last
-			if (changeDate == null) changeDate = (Temporal) this.getLastExecuted();
+			changeReferenceDate = (Temporal) this.getLastExecuted();
 			// check 
-			Duration passed = Duration.between(changeDate, Instant.now());
+			Duration passed = Duration.between(changeReferenceDate, Instant.now());
 			// check if we are due
 			if (passed.toMinutes() < this.getIntervallPeriod().toMinutes()) return false;
 			
@@ -311,13 +312,18 @@ public class Chore extends Bean{
 				result = true;
 				break;
 			case Update:
-				result = runUpdate(changeDate);
+				// allowed to be null -> full feed
+				result = runUpdate(changeReferenceDate);
+				break;
+			case FullFeed:
+				// allowed to be null -> full feed
+				result = runUpdate(null);
 				break;
 		}
 		
 		
 		// write the result
-		this.setLastExecuted(Timestamp.from((Instant)changeDate));
+		this.setLastExecuted(Timestamp.from((Instant)newRunTimestamp));
 		
 		if (result){
 			this.setLastStatus(StatusType.Success);

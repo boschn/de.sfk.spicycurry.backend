@@ -50,7 +50,9 @@ public class H2Server extends AbstractDBServer {
 	
 	// H2 Server
 	private Server serverH2TCP = null;
-
+	private Server serverH2Postgress = null;
+	private Server serverWeb = null;
+	
 	// the port for the server
 	private int autoServerPort;
 	// the database id
@@ -193,6 +195,56 @@ public class H2Server extends AbstractDBServer {
 		this.passWord = passWord;
 	}
 	/**
+	 * start the postgress server
+	 * @return true if successfull
+	 */
+	public boolean startPostgressServer() {
+		try {
+			serverH2Postgress = Server.createPgServer("-pgAllowOthers", 
+											   "-ifExists",
+											   "-pgDaemon",
+											   "-key", getId(), 
+							                    this.getDatabaseFile()
+											  );
+			serverH2Postgress.start();
+			
+		} catch (Exception e) {                                                                                 
+		        logger.error("h2 postgress server '"+ getId() + "' failed to start @'" + this.getAddress()); 
+		        logger.error(e.getLocalizedMessage());                                                              
+		        if (logger.isDebugEnabled()) logger.catching(e);                                                    
+		        return false;                                                                                       
+		}                                                                               
+		
+		logger.info("h2 postgress server '"+ getId() + "' started on host '" + getHostName());
+		return true;
+	}
+	/**
+	 * start web server
+	 * @return true if successfull
+	 */
+	public boolean startWebServer() {
+		
+		try {
+			serverWeb = Server.createWebServer("-webAllowOthers", 
+											   "-ifExists",
+											   "-webDaemon",
+											   "-key", getId(), 
+							                    this.getDatabaseFile()
+											  );
+			serverWeb.start();
+			logger.info("h2 web server '"+ getId() + "' started on host '" + getHostName());
+			
+		} catch (Exception e) {                                                                                 
+		        logger.error("h2 web server '"+ getId() + "' failed to start @'" + this.getAddress()); 
+		        logger.error(e.getLocalizedMessage());                                                              
+		        if (logger.isDebugEnabled()) logger.catching(e);                                                    
+		        return false;                                                                                       
+		}                                                                                                       
+		
+		
+		return true;
+	}
+	/**
 	 * start the server with the default id
 	 * @return
 	 */
@@ -243,9 +295,13 @@ public class H2Server extends AbstractDBServer {
 	        
 	        // Added the following... 
 	        System.getProperties().setProperty("H2_IS_EMBEDDED_TCP_SERVER"+ serverH2TCP.getPort(), "TRUE");
-	        
-	        // return 
+	        // log info
 	        logger.info("h2 server '"+ getId() + "' started on host '" + hostName+ "' at " + address);
+	        
+	        // start the other server
+	        startWebServer();
+	        startPostgressServer();
+	        // return
 	        return true;
 	    }
 
@@ -268,6 +324,29 @@ public class H2Server extends AbstractDBServer {
 
 	            // Added the following...
 	            System.getProperties().setProperty("H2_IS_EMBEDDED_TCP_SERVER"+ s.getPort(), "FALSE");
+	            // return 
+		        logger.info("h2 server '"+ getId() + "' stopped on host '" + getHostName());
+	        }
+	        
+	        if (serverWeb != null) {
+	            Server s = serverWeb;
+	            // avoid calling stop recursively
+	            // because stopping the server will
+	            // try to close the database as well
+	            serverWeb = null;
+	            s.stop();
+	            // return 
+		        logger.info("h2 web server '"+ getId() + "' stopped on host '" + getHostName());
+	        }
+	        if (serverH2Postgress != null) {
+	            Server s = serverH2Postgress;
+	            // avoid calling stop recursively
+	            // because stopping the server will
+	            // try to close the database as well
+	            serverH2Postgress = null;
+	            s.stop();
+	            // return 
+		        logger.info("h2 postgress server '"+ getId() + "' stopped on host '" + getHostName());
 	        }
 	    }
 	    /**
