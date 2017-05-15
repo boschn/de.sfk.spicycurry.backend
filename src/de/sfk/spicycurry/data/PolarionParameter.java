@@ -3,6 +3,8 @@
  */
 package de.sfk.spicycurry.data;
 
+import de.sfk.spicycurry.Setting;
+
 /**
  * @author boris.schneider
  *

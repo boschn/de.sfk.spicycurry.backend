@@ -9,6 +9,8 @@ import javax.persistence.Persistence;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.sfk.spicycurry.Setting;
+
 /**
  * @author boris.schneider
  *

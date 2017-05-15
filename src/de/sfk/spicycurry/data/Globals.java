@@ -3,6 +3,8 @@
  */
 package de.sfk.spicycurry.data;
 
+import de.sfk.spicycurry.server.*;
+
 /**
  * @author boris.schneider
  *
@@ -10,4 +12,5 @@ package de.sfk.spicycurry.data;
 public class Globals {
 
 		public static final IPersistor Persistor = new EclipseLinkPersistor("H2LOCAL");
+		public static IDBServer DBServer = null;
 }
