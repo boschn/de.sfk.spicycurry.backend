@@ -10,7 +10,6 @@ import org.apache.commons.daemon.DaemonInitException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.sfk.spicycurry.data.Globals;
 import de.sfk.spicycurry.server.CurryServer;
 import de.sfk.spicycurry.server.H2Server;
 

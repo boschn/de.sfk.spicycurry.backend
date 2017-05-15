@@ -50,4 +50,13 @@ public interface IDBServer {
 	 * @return
 	 */
 	String getJDBCDriverName();
+	/**
+	 * return the user id for accessing the db server
+	 * @return
+	 */
+	String getUserId();
+	/**
+	 * return the password for the user 
+	 */
+	String getPassWord();
 }

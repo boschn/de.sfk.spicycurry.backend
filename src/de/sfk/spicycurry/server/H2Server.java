@@ -39,15 +39,17 @@ public class H2Server extends AbstractDBServer {
 	public static final String defaultPort = "9092";
 	// default lock file name
 	private static final String defaultFileName = "dbserver.lock";
+	private static final String defaultUserId = "sa";
+	private static final String defaultPassword = "";
 	// PropertyName for default Port
 	private static final String PROPERTY_H2_DATABASE_PORT = "H2.PORT";
 	// driver name
 	public static final String PROPERTY_H2_JDBC_DRIVER = "H2.JDBC_DRIVER";
 	// defaultdriver
-	public static final String defaultJDBCDriver = "org.h2.driver";
+	public static final String defaultJDBCDriver = "org.h2.Driver";
 	
 	// H2 Server
-	private Server server = null;
+	private Server serverH2TCP = null;
 
 	// the port for the server
 	private int autoServerPort;
@@ -57,7 +59,10 @@ public class H2Server extends AbstractDBServer {
 	private String databaseFile;
 	// the driver name
 	private String databaseJDBCDriver;
-	
+	// user
+	private String userId = "";
+	// password
+	private String passWord = "";
 	// logger
 	private static Logger logger = LogManager.getLogger(H2Server.class);
 	
@@ -67,23 +72,28 @@ public class H2Server extends AbstractDBServer {
 	public H2Server()
 	{
 		super();
-		int port = Integer.parseUnsignedInt(Setting.Default.get(PROPERTY_H2_DATABASE_PORT,defaultPort));
-		Path defaultPath = null;
+		int aPort = Integer.parseUnsignedInt(Setting.Default.get(PROPERTY_H2_DATABASE_PORT,defaultPort));
+		Path aDefaultPath = null;
 		try {
-			defaultPath = Paths.get(H2Server.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+			aDefaultPath = Paths.get(H2Server.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 		} catch (URISyntaxException e) {
 			logger.debug(e.getLocalizedMessage());
 			if (logger.isDebugEnabled()) logger.catching(e);
-			defaultPath = Paths.get(".");
+			aDefaultPath = Paths.get(".");
 		}
-		String databasePath = Setting.Default.get(AbstractPersistor.PROPERTY_PERSISTOR_DATABASE_PATH, defaultPath.toString());
-		String databaseName = Setting.Default.get(AbstractPersistor.PROPERTY_PERSISTOR_DATABASE_NAME, defaultDatabaseName);
-		String driverClassName = Setting.Default.get(this.PROPERTY_H2_JDBC_DRIVER, this.defaultJDBCDriver);
+		String aDatabasePath = Setting.Default.get(AbstractPersistor.PROPERTY_PERSISTOR_DATABASE_PATH, aDefaultPath.toString());
+		String aDatabaseName = Setting.Default.get(AbstractPersistor.PROPERTY_PERSISTOR_DATABASE_NAME, defaultDatabaseName);
+		String aDriverClassName = Setting.Default.get(this.PROPERTY_H2_JDBC_DRIVER, this.defaultJDBCDriver);
+		String anUserId = Setting.Default.get(AbstractPersistor.PROPERTY_PERSISTOR_DATABASE_USERNAME, defaultUserId);
+		String aPassword = Setting.Default.get(AbstractPersistor.PROPERTY_PERSISTOR_DATABASE_PASSWORD, defaultPassword);
+
 		
-		setJDBCDriverName(driverClassName);
-		setId(databaseName);
-		setAutoServerPort(port);
-		setDatabaseFile(databasePath + "/" + databaseName);
+		setJDBCDriverName(aDriverClassName);
+		setId(aDatabaseName);
+		setAutoServerPort(aPort);
+		setDatabaseFile(aDatabasePath + "/" + aDatabaseName);
+		setUserId(anUserId);
+		setPassWord(aPassword);
 	}
 	/**
 	 * creates an server instance with given databaseName and port
@@ -122,7 +132,7 @@ public class H2Server extends AbstractDBServer {
 	 * 
 	 * @return
 	 */
-	public synchronized String getDatabasFile() {
+	public synchronized String getDatabaseFile() {
 		return databaseFile;
 	}
 
@@ -159,40 +169,56 @@ public class H2Server extends AbstractDBServer {
 		this.databaseJDBCDriver = databaseJDBCDriver;
 	}
 	/**
+	 * @return the userId
+	 */
+	public String getUserId() {
+		return userId;
+	}
+	/**
+	 * @param userId the userId to set
+	 */
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+	/**
+	 * @return the passWord
+	 */
+	public String getPassWord() {
+		return passWord;
+	}
+	/**
+	 * @param passWord the passWord to set
+	 */
+	public void setPassWord(String passWord) {
+		this.passWord = passWord;
+	}
+	/**
 	 * start the server with the default id
 	 * @return
 	 */
 	public boolean startServer(){
-		return startServer(this.getId());
-	}
-	/**
-	  * start the server with a name
-	  * @param id server name
-	  */
-	 protected boolean startServer(String id) {
-		 
 		 String localAddress = NetUtils.getLocalAddress();
 	     String address = localAddress + ":" + Integer.toString(this.getAutoServerPort());
 	     String hostName = NetUtils.getHostName(localAddress);
 	           
 			try {
-	            server = Server.createTcpServer(
+	            serverH2TCP = Server.createTcpServer(
 	                    "-tcpPort", Integer.toString(this.getAutoServerPort()),
 	                    "-tcpAllowOthers",
 	                    "-tcpDaemon",
-	                    "-key", id, 
-	                    this.getDatabasFile());
+	                    "-key", getId(), 
+	                    this.getDatabaseFile());
 	            
-	            server.start();
+	            serverH2TCP.start();
 	        } catch (Exception e) {
-	            logger.error("h2 server '"+ id + "' failed to start on host '" + hostName+ "' at " + address);
+	            logger.error("h2 server '"+ getId() + "' failed to start on host '" + hostName+ "' at " + address);
 	            logger.error(e.getLocalizedMessage());
 	            if (logger.isDebugEnabled()) logger.catching(e);
 	            return false;
 	        }
-	        if (!server.isRunning(false)){
-	        	logger.error("h2 server '"+ id + "' failed to start on host '" + hostName+ "' at " + address);
-	            logger.error(server.getStatus());
+	        if (!serverH2TCP.isRunning(false)){
+	        	logger.error("h2 server '"+ getId() + "' failed to start on host '" + hostName+ "' at " + address);
+	            logger.error(serverH2TCP.getStatus());
 	        	return false;
 	        }
 			// lock
@@ -216,10 +242,10 @@ public class H2Server extends AbstractDBServer {
 	          });
 	        
 	        // Added the following... 
-	        System.getProperties().setProperty("H2_IS_EMBEDDED_TCP_SERVER"+ server.getPort(), "TRUE");
+	        System.getProperties().setProperty("H2_IS_EMBEDDED_TCP_SERVER"+ serverH2TCP.getPort(), "TRUE");
 	        
 	        // return 
-	        logger.info("h2 server '"+ id + "' started on host '" + hostName+ "' at " + address);
+	        logger.info("h2 server '"+ getId() + "' started on host '" + hostName+ "' at " + address);
 	        return true;
 	    }
 
@@ -227,12 +253,12 @@ public class H2Server extends AbstractDBServer {
 	 	 * stop the server
 	 	 */
 	    public synchronized void stopServer() {
-	        if (server != null) {
-	            Server s = server;
+	        if (serverH2TCP != null) {
+	            Server s = serverH2TCP;
 	            // avoid calling stop recursively
 	            // because stopping the server will
 	            // try to close the database as well
-	            server = null;
+	            serverH2TCP = null;
 	            s.stop();
 	            
 	            File file = new File(defaultFileName);
@@ -253,8 +279,8 @@ public class H2Server extends AbstractDBServer {
 		@Override
 		public boolean isServerRunning() {
 			// TODO Auto-generated method stub
-			if (server == null) return false;
-			if (server.isRunning(false)) return true;
+			if (serverH2TCP == null) return false;
+			if (serverH2TCP.isRunning(false)) return true;
 			
 			return false;
 		}
@@ -347,12 +373,12 @@ public class H2Server extends AbstractDBServer {
 		@Override
 		public String getAddress() {
 			
-			return this.getHostName() + ":" + this.getAutoServerPort() + ":" + this.getDatabasFile();
+			return this.getHostName() + ":" + this.getAutoServerPort() + ":" + this.getDatabaseFile();
 		}
 		@Override
 		public String getJDBCUrl() {
 			
-			return "jdbc:h2:tcp://localhost:" + Integer.toString(getAutoServerPort())+ "/" + this.getDatabasFile();
+			return "jdbc:h2:tcp://" + this.getHostName()+ ":" + Integer.toString(getAutoServerPort())+ "/" + this.getId();
 		}
 		      
 		

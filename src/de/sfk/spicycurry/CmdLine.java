@@ -4,7 +4,6 @@
 package de.sfk.spicycurry;
 
 import de.sfk.spicycurry.data.DataRunner;
-import de.sfk.spicycurry.data.Globals;
 import de.sfk.spicycurry.server.CurryServer;
 import de.sfk.spicycurry.server.H2Server;
 
@@ -171,10 +170,10 @@ public class CmdLine {
 		
 		// endless running
 		if (!ignoreServerMode && cmd.hasOption(CmdLine.cmdServer)) {
-			CurryServer aServer = new CurryServer(false);
-			aServer.start();
+			Globals.CurryServer = new CurryServer(false);
+			Globals.CurryServer.start();
 			try {
-				aServer.join(0);
+				Globals.CurryServer.join(0);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				logger.info(e.getLocalizedMessage());

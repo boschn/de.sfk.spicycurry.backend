@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.persistence.config.PersistenceUnitProperties;
 
+import de.sfk.spicycurry.Globals;
 import de.sfk.spicycurry.Setting;
 /**
  * persistor class for eclipseLink
@@ -58,8 +59,8 @@ public class EclipseLinkPersistor extends AbstractPersistor implements IPersisto
 				// set the correct properties
 				
 				props.put(PersistenceUnitProperties.JDBC_URL, Globals.DBServer.getJDBCUrl());
-				props.put(PersistenceUnitProperties.JDBC_USER, "sa");
-				props.put(PersistenceUnitProperties.JDBC_PASSWORD, "");
+				props.put(PersistenceUnitProperties.JDBC_USER, Globals.DBServer.getUserId());
+				props.put(PersistenceUnitProperties.JDBC_PASSWORD, Globals.DBServer.getPassWord());
 				props.put(PersistenceUnitProperties.JDBC_DRIVER, Globals.DBServer.getJDBCDriverName());
 
 				emf = Persistence.createEntityManagerFactory(persistenceProvider, props);
