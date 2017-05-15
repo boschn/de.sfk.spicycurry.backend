@@ -1,5 +1,5 @@
 /**
- * 
+ * Commandline interface
  */
 package de.sfk.spicycurry;
 
