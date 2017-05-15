@@ -7,7 +7,6 @@
 package de.sfk.spicycurry.data;
 
 
-
 import java.io.Closeable;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;

@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
 
 import org.apache.commons.cli.*;
 
@@ -152,7 +151,7 @@ public class CmdLine {
 				}
 			}
 			// run even with null date -> full feed
-			DataRunner.runFeed(aChangedDate);
+			DataRunner.runFeed(aChangedDate.toInstant());
 			aRunflag = true;
 		}
 		

@@ -6,6 +6,8 @@ package de.sfk.spicycurry.data;
 import java.io.Closeable;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -238,13 +240,14 @@ public class SpecificationStore implements Closeable {
 	 * 
 	 * @return true if successfull
 	 */
-	public boolean loadAllPolarion(Date changeDate)
+	public boolean loadAllPolarion(Temporal changedSince)
 	{
 		return loadPolarion(PolarionParameter.Default.getBaseUrl(), 
 				    PolarionParameter.Default.getUserName(),
 				    PolarionParameter.Default.getPassWord(),
-				    null, changeDate);
+				    null, changedSince);
 	}
+	
 	/**
 	 * load from polarion the workitem and persist it in store
 	 * 
@@ -254,7 +257,7 @@ public class SpecificationStore implements Closeable {
 	 * @param id of the workitem or null to load ALL query
 	 * @return
 	 */
-	private boolean loadPolarion(String baseUrl, String userName, String passWord, String id, Date changeDate)
+	private boolean loadPolarion(String baseUrl, String userName, String passWord, String id, Temporal changeDate)
 	{
 		long i=0;
 		try {
@@ -267,7 +270,7 @@ public class SpecificationStore implements Closeable {
 			if (id != null) aQry = aQry + " AND id:"+ id;
 			if (changeDate != null) {
 				SimpleDateFormat aFormatter = new SimpleDateFormat("yyyyMMdd");
-				aQry = aQry + " AND updated:[" + aFormatter.format(changeDate) + " TO 30000000]";
+				aQry = aQry + " AND updated:[" + aFormatter.format(Date.from((Instant) changeDate)) + " TO 30000000]";
 			}
 			
 			// run the query

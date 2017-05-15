@@ -13,6 +13,8 @@ import javax.persistence.CollectionTable;
 
 import org.eclipse.persistence.annotations.*;
 
+import de.sfk.spicycurry.Globals;
+
 /**
  * requirement is an structured object to describe a feature
  * 
@@ -23,7 +25,7 @@ import org.eclipse.persistence.annotations.*;
 
 @Entity(name="Requirement")
 @Inheritance(strategy=InheritanceType.JOINED)
-public class Requirement implements Visitable ,Serializable{
+public class Requirement extends Bean implements Visitable ,Serializable{
 
 	@Transient
 	private static final long serialVersionUID = 1L;
@@ -142,7 +144,7 @@ public class Requirement implements Visitable ,Serializable{
 	 * constructor
 	 */
 	public Requirement() {
-		super();
+		super(Globals.Persistor);
 	}
 	/**
 	 * constructor
@@ -150,7 +152,7 @@ public class Requirement implements Visitable ,Serializable{
 	 */
 	public Requirement(String id)
 	{
-		super();
+		super(Globals.Persistor);
 		this.setId(id);
 		
 	}

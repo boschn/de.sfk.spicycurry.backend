@@ -29,6 +29,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
+import de.sfk.spicycurry.Globals;
+
 /**
  * persistable specification object
  * 
@@ -37,7 +39,7 @@ import javax.persistence.Version;
  */
 @Entity(name="Specification")
 @Inheritance(strategy=InheritanceType.JOINED)
-public class Specification implements Visitable ,Serializable{
+public class Specification extends Bean implements Visitable ,Serializable{
 
 	@Transient
 	private static final long serialVersionUID = 2L;
@@ -154,7 +156,7 @@ public class Specification implements Visitable ,Serializable{
 	 * constructor
 	 */
 	public Specification() {
-		super();
+		super(Globals.Persistor);
 	}
 	/**
 	 * constructor
@@ -162,7 +164,7 @@ public class Specification implements Visitable ,Serializable{
 	 */
 	public Specification(String id)
 	{
-		super();
+		super(Globals.Persistor);
 		this.setId(id);
 		
 	}

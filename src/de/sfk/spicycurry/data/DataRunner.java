@@ -4,6 +4,8 @@
 package de.sfk.spicycurry.data;
 
 
+import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
@@ -68,7 +70,7 @@ public class DataRunner {
 	 * run full database feed from polarion
 	 * @param args
 	 */
-	public static void runFeed(Date changedSince) {
+	public static void runFeed(Temporal changedSince) {
 		
 		if (logger.isDebugEnabled()) {
 			logger.debug("entering runFeed()");

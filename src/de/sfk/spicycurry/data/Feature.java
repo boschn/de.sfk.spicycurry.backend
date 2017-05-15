@@ -8,6 +8,8 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 
 import javax.persistence.*;
+
+import de.sfk.spicycurry.Globals;
 /**
  * @author boris.schneider
  *
@@ -15,7 +17,7 @@ import javax.persistence.*;
 
 @Entity(name="Feature")
 @Inheritance(strategy=InheritanceType.JOINED)
-public class Feature implements Serializable, Visitable {
+public class Feature extends Bean implements Serializable, Visitable {
 
 	@Transient
 	private static final long serialVersionUID = 3L;
@@ -53,12 +55,14 @@ public class Feature implements Serializable, Visitable {
 	 * constructor
 	 */
 	public Feature() {
-		super();
+		super(Globals.Persistor);
 	}
 	public Feature(String id) {
+		super(Globals.Persistor);
 		this.id = id;
 	}
 	public Feature(Requirement requirement) {
+		super(Globals.Persistor);
 		this.id = requirement.getId();
 		this.setRequirement	(requirement);
 	}

@@ -4,6 +4,7 @@
 package de.sfk.spicycurry.server;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -98,9 +99,9 @@ public class CurryServer extends Thread {
         this.loadChores();
         // default chores
         if (chores.size()==0){
-        	chores.add(new Chore("feed features from polarion", Chore.JobType.Update, Duration.ofDays(1), new String[] { Feature.class.getName(), "polarion" }));
-        	chores.add(new Chore("feed requirement from polarion", Chore.JobType.Update, Duration.ofDays(1), new String[] { Requirement.class.getName(), "polarion" }));
-        	chores.add(new Chore("feed specifications from polarion", Chore.JobType.Update, Duration.ofDays(1), new String[] { Specification.class.getName(), "polarion" }));
+        	chores.add(new Chore("feed features from polarion", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "polarion" }));
+        	chores.add(new Chore("feed requirement from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Requirement.class.getName(), "polarion" }));
+        	chores.add(new Chore("feed specifications from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Specification.class.getName(), "polarion" }));
         }
         
     	// load all Features
@@ -134,14 +135,15 @@ public class CurryServer extends Thread {
     	 */
     	 while ( !isInterrupted() ){
     		 try{
-    			 
+    			 Instant changeDate = Instant.now();
     			 // run the chores
     			 for(Chore aChore: chores){
-    					 aChore.run();
+    					 if (aChore.run(changeDate)) logger.info(aChore.getDescription() + " run with success");
+    					 else logger.info(aChore.getDescription() + " failed while running");
     			 }
     			 
     			 // lay to sleep
-    			 Thread.sleep( 5000 );
+    			 Thread.sleep( 60000 );
     	       
     	      }catch ( InterruptedException e ){
     	       interrupt();
