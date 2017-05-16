@@ -27,9 +27,11 @@ import de.sfk.spicycurry.CurryDaemon;
 import de.sfk.spicycurry.Globals;
 import de.sfk.spicycurry.data.Bean;
 import de.sfk.spicycurry.data.Feature;
+import de.sfk.spicycurry.data.FeatureStore;
 import de.sfk.spicycurry.data.Requirement;
 import de.sfk.spicycurry.data.RequirementStore;
 import de.sfk.spicycurry.data.Specification;
+import de.sfk.spicycurry.data.SpecificationStore;
 
 /**
  * define the tasks which the server does
@@ -41,8 +43,9 @@ public class Chore extends Bean{
 	
 	// job
 	public enum JobType {
+		Nothing,
 		Update,
-		Nothing, FullFeed
+		FullFeed
 	}
 	
 	// status
@@ -64,6 +67,7 @@ public class Chore extends Bean{
 	private String description = "";
 		
 	// jobType what to do
+	@Column
 	private JobType job = JobType.Nothing;
 	
 	// Arguments of the job type
@@ -71,6 +75,7 @@ public class Chore extends Bean{
 	private ArrayList<String> arguments = new ArrayList<String>();
 	
 	// period of the intervall until we do it again
+	@Column
 	private Duration intervallPeriod = Duration.ofHours(12);
 	
 	// when executed
@@ -82,6 +87,7 @@ public class Chore extends Bean{
 	private String lastLog = "";
 	
 	// last status
+	@Column
 	private StatusType lastStatus = StatusType.Enqueued;
 	
 	@Version
@@ -242,6 +248,12 @@ public class Chore extends Bean{
 			// check on the object
 			if (ClazzName.toUpperCase().contains(Requirement.class.getName().toUpperCase())) {
 				if (RequirementStore.db.loadAllPolarion(lastChangeReferenceDate)){
+					// start persisting it all
+					new Thread() {
+			            public void run() {
+			              RequirementStore.db.persist();
+			            }
+			          }.start();
 					return true;
 				}else {
 					this.lastLog = "polarion load failed - see log file";
@@ -249,7 +261,14 @@ public class Chore extends Bean{
 				}
 			}else
 			if (ClazzName.toUpperCase().contains(Specification.class.getName().toUpperCase())) {
-				if (RequirementStore.db.loadAllPolarion(lastChangeReferenceDate)) {
+				if (SpecificationStore.db.loadAllPolarion(lastChangeReferenceDate)) {
+						// start persisting it all
+						new Thread() {
+				            public void run() {
+				              SpecificationStore.db.persist();
+				            }
+				          }.start();
+
 						this.lastLog = "polarion load succeeded";
 						return true;
 				}else {
@@ -259,7 +278,14 @@ public class Chore extends Bean{
 			}else
 			if (ClazzName.toUpperCase().contains(Feature.class.getName().toUpperCase())) {
 				if (ForeignStore.toUpperCase().contains("POLARION")){
-					if (RequirementStore.db.loadAllPolarion(lastChangeReferenceDate)){
+					if (FeatureStore.db.loadAllPolarion(lastChangeReferenceDate)){
+						// start persisting it all
+						new Thread() {
+				            public void run() {
+				              FeatureStore.db.persist();
+				            }
+				          }.start();
+
 						this.lastLog = "polarion load succeeded";
 						return true;
 					}else {
@@ -294,6 +320,7 @@ public class Chore extends Bean{
 	public boolean run(Temporal newRunTimestamp) {
 		Temporal changeReferenceDate = null;
 		boolean result = false;
+		if (newRunTimestamp == null) newRunTimestamp = Instant.now();
 		
 		// check if the chore is due
 		if (this.getLastExecuted() != null) {

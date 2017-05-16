@@ -286,14 +286,14 @@ public class SpecificationStore implements Closeable {
 				if (anItem != null){
 					Specification aSpecification = 	this.add(anItem, true);
 					if (aSpecification != null) {
-						
+						i++;
+						if (i % 1000 == 0)	System.out.print('.');
+
+/*						
 						try {
 							persistor.begin();
 							persistor.persist(aSpecification);
 							persistor.commit();
-							i++;
-							if (i % 1000 == 0)
-								System.out.print('.');
 							
 						} catch (Exception e) {
 							
@@ -303,6 +303,7 @@ public class SpecificationStore implements Closeable {
 									logger.error(e.getStackTrace());
 
 						}
+*/
 					}else
 						if (logger.isDebugEnabled()) 
 							logger.debug(anItem.getUri() + " unable to convert to Specification");
@@ -444,5 +445,27 @@ public class SpecificationStore implements Closeable {
 		return specifications.values();
 	}
 
+	/** 
+	 * persist them all
+	 * @return
+	 */
+	public boolean persist(){
+		long i = 0;
+		
+		for (Bean aBean: specifications.values()){
+			try {
+				// persistor.begin();
+				aBean.persist();
+				i++;
+				// persistor.commit();
+				if (i % 1000 == 0)
+					System.out.print('.');
 
+			} catch (Exception e) {
+				logger.debug(e.getMessage());
+			}
+		}
+		logger.info(i + " specifications persisted");
+		return true;
+	}
 }

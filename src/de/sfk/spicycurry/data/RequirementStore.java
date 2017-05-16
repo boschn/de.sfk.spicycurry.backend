@@ -284,14 +284,11 @@ public class RequirementStore implements Closeable {
 					if (anItem != null){
 						Requirement aRequirement = 	this.add(anItem, true);
 						if (aRequirement != null) {
-							
+/*							
 							try {
 								persistor.begin();
 								persistor.persist(aRequirement);
 								persistor.commit();
-								i++;
-								if (i % 1000 == 0)
-									System.out.print('.');
 								
 							} catch (Exception e) {
 								
@@ -301,6 +298,11 @@ public class RequirementStore implements Closeable {
 										logger.error(e.getStackTrace());
 
 							}
+*/
+							i++;
+							if (i % 1000 == 0)
+								System.out.print('.');
+						
 						}else
 							if (logger.isDebugEnabled()) 
 								logger.debug(anItem.getUri() + " unable to convert to requirement");
@@ -311,7 +313,7 @@ public class RequirementStore implements Closeable {
 				}
 				 
 				
-				logger.info(i + " requirements persisted");
+				logger.info(i + " requirements loaded from polarion");
 				return true;
 				
 			} catch (Exception e) {
@@ -333,7 +335,28 @@ public class RequirementStore implements Closeable {
 		public void close(){
 			loader.close();
 		}
-		
+		/** 
+		 * persist them all
+		 * @return
+		 */
+		public boolean persist(){
+			long i = 0;
+			
+			for (Bean aBean: requirements.values()){
+				try {
+					// persistor.begin();
+					aBean.persist();
+					i++;
+					// persistor.commit();
+					if (i % 1000 == 0)
+						System.out.print('.');
+				} catch (Exception e) {
+					logger.debug(e.getMessage());
+				}
+			}
+			
+			return true;
+		}
 		/**
 		 * open persistence
 		 */

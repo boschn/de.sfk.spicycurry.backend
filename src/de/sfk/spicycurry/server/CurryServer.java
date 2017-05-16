@@ -98,7 +98,7 @@ public class CurryServer extends Thread {
         // load the chores
         this.loadChores();
         // default chores
-        if (chores.size()==0){
+        if (chores.size()<=3){
         	chores.add(new Chore("feed features from polarion", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "polarion" }));
         	chores.add(new Chore("feed requirement from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Requirement.class.getName(), "polarion" }));
         	chores.add(new Chore("feed specifications from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Specification.class.getName(), "polarion" }));

@@ -269,9 +269,7 @@ public class FeatureStore implements Closeable {
 								if (i % 100 == 0) System.out.print('.');
 								
 							} catch (Exception e) {
-								if (logger.isErrorEnabled()) 
-									logger.catching(e);
-								else logger.debug(e.getMessage());
+								logger.debug(e.getMessage());
 							}
 						}else
 							
@@ -336,4 +334,32 @@ public class FeatureStore implements Closeable {
 		public Collection<Feature> all(){
 			return features.values();
 		}
+		/** 
+		 * persist them all
+		 * @return
+		 */
+		public boolean persist(){
+			long i = 0;
+			
+			for (Bean aBean: features.values()){
+				try {
+					// persistor.begin();
+					aBean.persist();
+					i++;
+					// persistor.commit();
+					if (i % 1000 == 0)
+						System.out.print('.');
+				} catch (Exception e) {
+				
+					if (logger.isDebugEnabled())
+						logger.debug(e.getMessage());
+					else if (logger.isErrorEnabled())
+							logger.error(e.getStackTrace());
+
+				}
+			}
+			logger.info(i + " features persisted");
+			return true;
+		}
+
 }

@@ -26,7 +26,13 @@ public class Bean {
 	 * persist this object
 	 */
 	public void persist(){
-		if (persistor != null) persistor.persist(this);
+		if (persistor != null) {
+			
+				persistor.begin();
+				persistor.persist(this);
+				persistor.commit();
+			
+		}
 	}
 
 }
