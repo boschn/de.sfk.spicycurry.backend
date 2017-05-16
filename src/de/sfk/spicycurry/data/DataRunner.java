@@ -32,28 +32,10 @@ public class DataRunner {
 			logger.debug("entering test(String[])");
 		}
 		try {
-			// Setting.Default.read();
-			
-			logger.info("test started");
-			
-			if (FeatureStore.db.keySet().size() <= 1400) {
-				FeatureStore.db.loadAllPolarion();
-				logger.info(FeatureStore.db.count() + " features loaded from polarion");
-			}
-			
-			/* if (RequirementStore.db.has("1010-MIB3-ALG-57871")){ 
-					RequirementStore.db.loadPolarion("1010-MIB3-ALG-57871");
-					logger.info("1010-MIB3-ALG-57871 loaded from polarion");
-					logger.info(RequirementStore.db.count() + " requirements loaded from polarion");
-			}
-			*/
-			SpecificationStore.db.loadAllPolarion();
-			logger.info(SpecificationStore.db.count() + " specifications loaded from polarion");
-			
-			Feature[] theFeatures=FeatureStore.db.all().toArray(new Feature[FeatureStore.db.all().size()]);
-			
-			// travel through the tree
-			theFeatures[30].accept(new FeatureLiveVisitor());
+			String url = Setting.Default.get(JiraParameter.PROPERTY_JIRA_BASEURL, "https://jira3.technisat-digital.de");
+			String name = Setting.Default.get(JiraParameter.PROPERTY_JIRA_USERNAME, "boris.schneider");
+			String password = Setting.Default.get(JiraParameter.PROPERTY_JIRA_PASSWORD, "Carconnect1!");
+			JiraIssuesLoader.singleton.beginSession(url, name, password);
 			
 			// save properties
 			Setting.Default.write(true);

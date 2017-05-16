@@ -196,7 +196,11 @@
     	<artifactId>commons-daemon</artifactId>
     	<version>1.0.15</version>
 	</dependency>
-  	
+	<dependency>
+		<groupId>net.rcarz</groupId>
+		<artifactId>jira-client</artifactId>
+		<version>0.6-SNAPSHOT-SFKPATCHED</version>
+	</dependency>
   </dependencies>
   <dependencyManagement>
   	<dependencies>
@@ -325,6 +329,19 @@
         <id>local-maven-repo</id>
         <url>file:///${project.basedir}/lib</url>
     </repository>
- </repositories>
+    <repository>
+           <id>atlassian-public</id>
+           <url>https://m2proxy.atlassian.com/repository/public</url>
+           <snapshots>
+             <enabled>true</enabled>
+             <updatePolicy>daily</updatePolicy>
+             <checksumPolicy>warn</checksumPolicy>
+           </snapshots>
+           <releases>
+             <enabled>true</enabled>
+             <checksumPolicy>warn</checksumPolicy>
+           </releases>
+         </repository>
+ 	</repositories>
   <artifactId>Backend</artifactId>
 </project>

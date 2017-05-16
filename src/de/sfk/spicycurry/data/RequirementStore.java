@@ -48,7 +48,7 @@ public class RequirementStore implements Closeable {
 		private IPersistor persistor = Globals.Persistor;
 		
 		// polarion helpers
-		private WorkItemPolarionLoader loader = null;
+		private PolarionWorkItemLoader loader = null;
 			
 
 		// Logger
@@ -72,7 +72,7 @@ public class RequirementStore implements Closeable {
 		 * return the default work item loader
 		 * @return the loader
 		 */
-		public WorkItemPolarionLoader getLoader() {
+		public PolarionWorkItemLoader getLoader() {
 			return getPolarionLoader(PolarionParameter.Default.getBaseUrl(), 
 							 PolarionParameter.Default.getUserName(),
 							 PolarionParameter.Default.getPassWord());
@@ -84,9 +84,9 @@ public class RequirementStore implements Closeable {
 		 * @param passWord
 		 * @return
 		 */
-		public WorkItemPolarionLoader getPolarionLoader(String baseUrl, String userName, String passWord) {
+		public PolarionWorkItemLoader getPolarionLoader(String baseUrl, String userName, String passWord) {
 			try {
-				if (loader == null)	loader = WorkItemPolarionLoader.singleton;
+				if (loader == null)	loader = PolarionWorkItemLoader.singleton;
 				if (!loader.isInitialized()){
 					loader.beginSession(baseUrl,userName,passWord);
 					loader.setFields(PolarionParameter.getPLEFieldNames());
@@ -101,7 +101,7 @@ public class RequirementStore implements Closeable {
 		 * @param loader the loader to set
 		 */
 		@SuppressWarnings("unused")
-		private void setPolarionLoader(WorkItemPolarionLoader loader) {
+		private void setPolarionLoader(PolarionWorkItemLoader loader) {
 			this.loader = loader;
 		}
 		
@@ -259,7 +259,7 @@ public class RequirementStore implements Closeable {
 		{
 			long i=0;
 			try {
-				WorkItemPolarionLoader aLoader = this.getPolarionLoader(baseUrl, userName, passWord);
+				PolarionWorkItemLoader aLoader = this.getPolarionLoader(baseUrl, userName, passWord);
 				// query
 				String[] aList;
 				String aQry;
@@ -390,7 +390,7 @@ public class RequirementStore implements Closeable {
 		 */
 		protected List<Requirement> loadPolarionSubRequirements(Requirement noderequirement, WorkItem nodeitem)
 		{
-			WorkItemPolarionLoader aLoader = this.getLoader();
+			PolarionWorkItemLoader aLoader = this.getLoader();
 			ArrayList<Requirement> aList = new ArrayList<Requirement>();
 			
 			// get the work item

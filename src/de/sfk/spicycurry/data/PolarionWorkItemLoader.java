@@ -41,10 +41,10 @@ import com.polarion.alm.ws.client.types.tracker.WorkItem;
 import com.polarion.alm.ws.client.types.tracker.Attachment;
 
 
-public class WorkItemPolarionLoader implements Closeable {
+public class PolarionWorkItemLoader implements Closeable {
 	
 		// singleton
-		public static WorkItemPolarionLoader singleton = new WorkItemPolarionLoader();
+		public static PolarionWorkItemLoader singleton = new PolarionWorkItemLoader();
 	
 		// state
 		private boolean isInitialized = false;
@@ -67,11 +67,11 @@ public class WorkItemPolarionLoader implements Closeable {
 		private static SimpleDateFormat isoTimePointFormatter = new SimpleDateFormat(ISO_TIMEPOINT_FORMAT);
 		
 		// Logger
-		private Logger logger = LogManager.getLogger(WorkItemPolarionLoader.class);
+		private Logger logger = LogManager.getLogger(PolarionWorkItemLoader.class);
 		/**
 		 * constructor with no beginSession
 		 */
-		public WorkItemPolarionLoader() {
+		public PolarionWorkItemLoader() {
 			
 		}
 		/**
@@ -82,7 +82,7 @@ public class WorkItemPolarionLoader implements Closeable {
 		 * @param password
 		 * @throws Exception
 		 */
-		public WorkItemPolarionLoader(String url,String name,String password) throws Exception {
+		public PolarionWorkItemLoader(String url,String name,String password) throws Exception {
 			beginSession(url, name, password);
 		}
 
