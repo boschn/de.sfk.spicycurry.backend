@@ -77,6 +77,7 @@ public class CurryServer extends Thread {
 		try {
 			Query aQueryChores =
 					persistor.getEm().createQuery("select f from ServerChores f");
+			
 			chores = aQueryChores.getResultList();
 	        
 		} catch (Exception e) {
