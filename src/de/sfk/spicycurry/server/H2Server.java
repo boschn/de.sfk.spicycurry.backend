@@ -48,6 +48,9 @@ public class H2Server extends AbstractDBServer {
 	// defaultdriver
 	public static final String defaultJDBCDriver = "org.h2.Driver";
 	
+	public static final String PROPERTY_H2_LOCK_MODE = "H2.LOCK_MODE";
+	public static final String defaultH2LockMode = "3"
+	;
 	// H2 Server
 	private Server serverH2TCP = null;
 	private Server serverH2Postgress = null;
@@ -456,8 +459,8 @@ public class H2Server extends AbstractDBServer {
 		}
 		@Override
 		public String getJDBCUrl() {
-			
-			return "jdbc:h2:tcp://" + this.getHostName()+ ":" + Integer.toString(getAutoServerPort())+ "/" + this.getId();
+			String aLockMode = Setting.Default.get(PROPERTY_H2_LOCK_MODE, defaultH2LockMode);
+			return "jdbc:h2:tcp://" + this.getHostName()+ ":" + Integer.toString(getAutoServerPort())+ "/" + this.getId()+ ";LOCK_MODE=" + aLockMode;
 		}
 		      
 		
