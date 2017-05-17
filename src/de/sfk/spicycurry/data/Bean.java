@@ -5,15 +5,19 @@ package de.sfk.spicycurry.data;
 
 import javax.persistence.EntityTransaction;
 import javax.persistence.LockModeType;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 
 /**
  * general data bean
  * @author boris.schneider
  *
  */
+@MappedSuperclass
 public class Bean {
-	
+	@Transient
 	private IPersistor persistor = null;
+	@Transient
 	private boolean isChanged = false;
 	
 	protected Bean (IPersistor persistor){

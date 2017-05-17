@@ -20,7 +20,7 @@ import de.sfk.spicycurry.Globals;
 public class Feature extends Bean implements Serializable, Visitable {
 
 	@Transient
-	private static final long serialVersionUID = 3L;
+	private static final long serialVersionUID = 4L;
 	
 	@Id
 	@Column(name="feature_id", length=1024)
@@ -48,6 +48,10 @@ public class Feature extends Bean implements Serializable, Visitable {
 	@JoinColumn(name = "requirement_id")
 	private Requirement requirement = null;
 	
+	@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.REFRESH})
+	@JoinColumn(name = "feature_id", nullable=true)
+	private List<JiraIssueFeature> jiraissues = new ArrayList<JiraIssueFeature>();
+	
 	@Version
 	private Timestamp lastUpdate;
 	
@@ -63,7 +67,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	}
 	public Feature(Requirement requirement) {
 		super(Globals.Persistor);
-		this.id = requirement.getId();
+		this.id = requirement.getCustomerRequirementId(); // KA-WI-ID is the requirement
 		this.setRequirement	(requirement);
 	}
 

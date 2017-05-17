@@ -34,6 +34,14 @@ public class FeatureStore implements Closeable {
 		public static final String PROPERTY_POLARION_TYPE = "Feature.Polarion.WorkItemType";
 		public static final String PROPERTY_POLARION_FEATURE_QUERY = "Feature.Polarion.Query";
 
+		private static final String JIRA_PROJECTID = "MIBSERIELH";
+		private static final String JIRA_TYPE = "Feature";
+		private static final String JIRA_FEATURE_QUERY = "project=" + JIRA_PROJECTID + " AND issuetype:" + JIRA_TYPE ;
+	
+		public static final String PROPERTY_JIRA_PROJECTID = "Feature.JIRA.ProjectID";
+		public static final String PROPERTY_JIRA_TYPE = "Feature.JIRA.IssueType";
+		public static final String PROPERTY_JIRA_FEATURE_QUERY = "Feature.JIRA.Query";
+		
 		// singleton
 		public static FeatureStore db = new FeatureStore();
 	
@@ -245,7 +253,8 @@ public class FeatureStore implements Closeable {
 				String aQry;
 				
 				aQry = Setting.Default.get(PROPERTY_POLARION_FEATURE_QUERY);
-				if (id !=null) aQry = aQry + " AND id:"+ id ;
+				// load by KA-WI-ID
+				if (id !=null) aQry = aQry + " AND idKA:"+ id ;
 				if (changeDate != null) {
 					SimpleDateFormat aFormatter = new SimpleDateFormat("yyyyMMdd");
 					aQry = aQry + " AND updated:[" + aFormatter.format(Date.from((Instant) changeDate)) + " TO 30000000]";
