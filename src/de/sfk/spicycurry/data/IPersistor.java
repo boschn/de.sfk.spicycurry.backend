@@ -3,6 +3,8 @@ package de.sfk.spicycurry.data;
 import java.io.IOException;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -49,17 +51,17 @@ public interface IPersistor {
 	/**
 	 * start transaction
 	 */
-	void begin();
+	EntityTransaction begin();
 
 	/**
 	 * commit transaction
 	 */
-	void commit();
+	void commit(EntityTransaction t);
 
 	/**
 	 * rollback transaction
 	 */
-	void rollback();
+	void rollback(EntityTransaction t);
 
 	/**
 	 * getLogger
@@ -67,4 +69,6 @@ public interface IPersistor {
 	 * @param logger
 	 */
 	Logger getLogger();
+
+	
 }

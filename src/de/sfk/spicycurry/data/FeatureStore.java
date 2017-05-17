@@ -12,6 +12,8 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.polarion.alm.ws.client.types.tracker.WorkItem;
 
 import de.sfk.spicycurry.Globals;
@@ -36,8 +38,8 @@ public class FeatureStore implements Closeable {
 		public static FeatureStore db = new FeatureStore();
 	
 		// store
-		private HashMap<String, Feature> features = new HashMap<String,Feature>();
-		private HashMap<String, Feature> featuresByUri = new HashMap<String, Feature>(); //byURI
+		private ConcurrentHashMap<String, Feature> features = new ConcurrentHashMap<String,Feature>();
+		private ConcurrentHashMap<String, Feature> featuresByUri = new ConcurrentHashMap<String, Feature>(); //byURI
 		private IPersistor persistor = Globals.Persistor;
 		// polarion helpers
 		private PolarionWorkItemLoader loader = null;
@@ -262,9 +264,7 @@ public class FeatureStore implements Closeable {
 						Feature aFeature = 	this.add(anItem);
 						if (aFeature != null) {
 							try {
-								persistor.begin();
-								persistor.persist(aFeature);
-								persistor.commit();
+								aFeature.persist();
 								i++;
 								if (i % 100 == 0) System.out.print('.');
 								
@@ -289,7 +289,6 @@ public class FeatureStore implements Closeable {
 			}
 			
 			// rollback & close  
-			persistor.rollback();
 			loader.close();
 			return false;
 		}
@@ -297,17 +296,18 @@ public class FeatureStore implements Closeable {
 		/**
 		 * close all sessions
 		 */
-		public void close(){
+		public synchronized void close(){
 			loader.close();
 		}
 		/**
 		 * open persistence
 		 */
-		private void open() {
+		private synchronized void open() {
 
 			try {
 			Query aQueryFeature =
 					persistor.getEm().createQuery("select f from Feature f");
+				aQueryFeature.setLockMode(LockModeType.NONE);
 		        List<Feature> theFeatureResults = aQueryFeature.getResultList();
 		        for (Feature f : theFeatureResults) {
 		        	this.add(f, false);
@@ -338,7 +338,7 @@ public class FeatureStore implements Closeable {
 		 * persist them all
 		 * @return
 		 */
-		public boolean persist(){
+		public synchronized boolean  persist(){
 			long i = 0;
 			
 			for (Bean aBean: features.values()){

@@ -59,7 +59,6 @@ public class Chore extends Bean{
 	private static final long serialVersionUID = 1L;
 	
 	@Id 
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long Id;
 	
 	// jobType what to do
@@ -97,6 +96,9 @@ public class Chore extends Bean{
 	@Transient
 	private static Logger logger = LogManager.getLogger(Chore.class);
 	
+	@Transient
+	private boolean isRunning = false;
+	
 	/**
 	 * ctor
 	 */
@@ -111,8 +113,9 @@ public class Chore extends Bean{
 	 * @param arguments
 	 * @param intervallPeriod
 	 */
-	public Chore(String description, JobType job, Duration intervallPeriod, String args[] ) {
+	public Chore(Long id, String description, JobType job, Duration intervallPeriod, String args[] ) {
 		super(Globals.Persistor);
+		this.Id = id;
 		this.description = description;
 		this.job = job;
 		this.intervallPeriod = intervallPeriod;
@@ -129,6 +132,12 @@ public class Chore extends Bean{
 		return lastExecuted;
 	}
 
+	public boolean isRunning() {
+		return isRunning;
+	}
+	public void setRunning(boolean isRunning) {
+		this.isRunning = isRunning;
+	}
 	/**
 	 * @param lastExecuted the lastExecuted to set
 	 */
@@ -181,8 +190,9 @@ public class Chore extends Bean{
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(Long id) {
+	private void setId(Long id) {
 		Id = id;
+		setChanged(true);
 	}
 
 	/**
@@ -190,6 +200,7 @@ public class Chore extends Bean{
 	 */
 	public void setDescription(String description) {
 		this.description = description;
+		setChanged(true);
 	}
 
 	/**
@@ -197,6 +208,7 @@ public class Chore extends Bean{
 	 */
 	public void setJob(JobType job) {
 		this.job = job;
+		setChanged(true);
 	}
 
 	/**
@@ -204,6 +216,7 @@ public class Chore extends Bean{
 	 */
 	public void setArguments(ArrayList<String> arguments) {
 		this.arguments = arguments;
+		setChanged(true);
 	}
 
 	/**
@@ -211,6 +224,7 @@ public class Chore extends Bean{
 	 */
 	public void setIntervallPeriod(Duration intervallPeriod) {
 		this.intervallPeriod = intervallPeriod;
+		setChanged(true);
 	}
 
 	/**
@@ -218,6 +232,7 @@ public class Chore extends Bean{
 	 */
 	public void setLastLog(String lastLog) {
 		this.lastLog = lastLog;
+		setChanged(true);
 	}
 
 	/**
@@ -232,13 +247,14 @@ public class Chore extends Bean{
 	 */
 	public void setLastStatus(StatusType lastStatus) {
 		this.lastStatus = lastStatus;
+		setChanged(true);
 	}
 	/**
 	 * run an update of all the objects specified
 	 * @param lastChangeReferenceDate : if not null incremental update
 	 * @return true on success
 	 */
-	public boolean runUpdate(Temporal lastChangeReferenceDate){
+	public synchronized boolean runUpdate(Temporal lastChangeReferenceDate){
 		
 		try {
 			String ClazzName = this.getArguments().get(0);
@@ -248,12 +264,7 @@ public class Chore extends Bean{
 			// check on the object
 			if (ClazzName.toUpperCase().contains(Requirement.class.getName().toUpperCase())) {
 				if (RequirementStore.db.loadAllPolarion(lastChangeReferenceDate)){
-					// start persisting it all
-					new Thread() {
-			            public void run() {
-			              RequirementStore.db.persist();
-			            }
-			          }.start();
+ 				   RequirementStore.db.persist();
 					return true;
 				}else {
 					this.lastLog = "polarion load failed - see log file";
@@ -263,13 +274,8 @@ public class Chore extends Bean{
 			if (ClazzName.toUpperCase().contains(Specification.class.getName().toUpperCase())) {
 				if (SpecificationStore.db.loadAllPolarion(lastChangeReferenceDate)) {
 						// start persisting it all
-						new Thread() {
-				            public void run() {
-				              SpecificationStore.db.persist();
-				            }
-				          }.start();
-
-						this.lastLog = "polarion load succeeded";
+						SpecificationStore.db.persist();
+				        this.lastLog = "polarion load succeeded";
 						return true;
 				}else {
 					this.lastLog = "polarion load failed - see log file";
@@ -280,12 +286,7 @@ public class Chore extends Bean{
 				if (ForeignStore.toUpperCase().contains("POLARION")){
 					if (FeatureStore.db.loadAllPolarion(lastChangeReferenceDate)){
 						// start persisting it all
-						new Thread() {
-				            public void run() {
-				              FeatureStore.db.persist();
-				            }
-				          }.start();
-
+						FeatureStore.db.persist();
 						this.lastLog = "polarion load succeeded";
 						return true;
 					}else {
@@ -317,7 +318,7 @@ public class Chore extends Bean{
 	 * run the chore
 	 * @return true if run
 	 */
-	public boolean run(Temporal newRunTimestamp) {
+	public synchronized boolean run(Temporal newRunTimestamp) {
 		Temporal changeReferenceDate = null;
 		boolean result = false;
 		if (newRunTimestamp == null) newRunTimestamp = Instant.now();
@@ -333,21 +334,31 @@ public class Chore extends Bean{
 			
 		}
 		
-		// run the command
-		switch (this.getJob()){
-			case Nothing:
-				result = true;
-				break;
-			case Update:
-				// allowed to be null -> full feed
-				result = runUpdate(changeReferenceDate);
-				break;
-			case FullFeed:
-				// allowed to be null -> full feed
-				result = runUpdate(null);
-				break;
+		try {
+			
+			this.setRunning(true);
+			
+			// run the command
+			switch (this.getJob()){
+				case Nothing:
+					result = true;
+					break;
+				case Update:
+					// allowed to be null -> full feed
+					result = runUpdate(changeReferenceDate);
+					break;
+				case FullFeed:
+					// allowed to be null -> full feed
+					result = runUpdate(null);
+					break;
+				}
+			
+		}catch(Exception e){
+			logger.catching(e);
+			this.setLastLog(getLastLog() + "\n" + e.getLocalizedMessage());
 		}
 		
+		this.setRunning(false);
 		
 		// write the result
 		this.setLastExecuted(Timestamp.from((Instant)newRunTimestamp));

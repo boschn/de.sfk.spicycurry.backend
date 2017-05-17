@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 
 /**
  * Abstract Persistor 
@@ -78,14 +79,14 @@ public abstract class AbstractPersistor implements IPersistor {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public synchronized void close() throws IOException {
 		em.close();
 		emf.close();
 		this.getLogger().info(persistenceProvider + " was closed");
 	}
 
 	@Override
-	public boolean exists(Object o) {
+	public synchronized boolean exists(Object o) {
 		if (!isOpen()) this.Open();
 		if (em.isOpen()) return em.contains(o);
 		
@@ -93,7 +94,7 @@ public abstract class AbstractPersistor implements IPersistor {
 	}
 
 	@Override
-	public void persist(Object o) {
+	public synchronized void persist(Object o) {
 		if (!isOpen()) this.Open();
 		
 		if (em.isOpen()) em.persist(o);
@@ -103,9 +104,9 @@ public abstract class AbstractPersistor implements IPersistor {
 	}
 
 	@Override
-	public void commit() {
+	public synchronized void commit(EntityTransaction t) {
 		if (em != null)
-			em.getTransaction().commit();
+			t.commit();
 		else if (this.getLogger() != null && this.getLogger().isDebugEnabled()) 
 						this.getLogger().debug("em is null");
 	}
@@ -114,12 +115,12 @@ public abstract class AbstractPersistor implements IPersistor {
 	 * @see de.sfk.spicycurry.data.IPersistor#begin()
 	 */
 	@Override
-	public void begin() {
+	public synchronized EntityTransaction begin() {
 		if (!isOpen()) this.Open();
 		try {
-			  
-			em.getTransaction().begin();
-			
+			EntityTransaction aT = em.getTransaction();
+			aT.begin();
+			return aT;
 		}catch (Exception e)
 		{
 			if (this.getLogger() != null) {
@@ -128,14 +129,13 @@ public abstract class AbstractPersistor implements IPersistor {
 					this.getLogger().catching(e);
 			}
 		}
+		return null;
 	}
 
 	@Override
-	public void rollback() {
+	public synchronized void rollback(EntityTransaction t) {
 		try {
-				if (em != null)
-					em.getTransaction().rollback();
-				
+ 			t.rollback();
 			}catch (Exception e){
 				if (this.getLogger() != null) {
 					this.getLogger().info(e.getMessage());

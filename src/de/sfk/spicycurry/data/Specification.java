@@ -179,6 +179,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	private void setId(String id) {
 		this.id = id;
+		setChanged(true);
 	}
 	/**
 	 * @return the hash code
@@ -216,6 +217,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setSourceModule(String sourceModule) {
 		this.sourceModule = sourceModule;
+		setChanged(true);
 	}
 	/**
 	 * @return the title
@@ -228,6 +230,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setTitle(String title) {
 		this.title = title;
+		setChanged(true);
 	}
 	/**
 	 * @return the description
@@ -240,6 +243,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setDescription(String text) {
 		this.description = text;
+		setChanged(true);
 	}
 	/**
 	 * @return the status
@@ -252,6 +256,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setStatus(String status) {
 		this.status = status;
+		setChanged(true);
 	}
 	/**
 	 * @return the testWorkgroup
@@ -270,12 +275,14 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setTestFeasibility(String testFeasibility) {
 		this.testFeasibility = testFeasibility;
+		setChanged(true);
 	}
 	/**
 	 * @param testWorkgroup the testWorkgroup to set
 	 */
 	public void setTestWorkgroup(String testWorkgroup) {
 		this.testWorkgroup = testWorkgroup;
+		setChanged(true);
 	}
 	/**
 	 * @return the testAssignee
@@ -288,6 +295,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setTestAssignee(String testAssignee) {
 		this.testAssignee = testAssignee;
+		setChanged(true);
 	}
 	/**
 	 * @return the accepted
@@ -300,6 +308,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setAccepted(boolean accepted) {
 		this.accepted = accepted;
+		setChanged(true);
 	}
 	/**
 	 * @return the createdOn
@@ -312,6 +321,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCreatedOn(Calendar createdOn) {
 		this.createdOn = createdOn;
+		setChanged(true);
 	}
 	/**
 	 * @return the updatedOn
@@ -324,6 +334,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setUpdatedOn(Calendar updatedOn) {
 		this.updatedOn = updatedOn;
+		setChanged(true);
 	}
 	/**
 	 * @return the author
@@ -336,6 +347,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setAuthor(String author) {
 		this.author = author;
+		setChanged(true);
 	}
 	/**
 	 * @return the markets
@@ -348,6 +360,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setMarkets(List<String> markets) {
 		this.markets = markets;
+		setChanged(true);
 	}
 	/**
 	 * @return the brands
@@ -366,6 +379,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setTestability(String testability) {
 		this.testability = testability;
+		setChanged(true);
 	}
 	/**
 	 * @return the brands
@@ -384,6 +398,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setBrands(List<String> brands) {
 		this.brands = brands;
+		setChanged(true);
 	}
 	/**
 	 * @return Collection of Requirements - lazy load from SpecificationStore
@@ -428,6 +443,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 		if (!this.subSpecifications.containsKey(specification.getId())) {
 			// add the child
 			this.subSpecifications.put(specification.getId(), specification);
+			setChanged(true);
 			// add the top level features from me to the child
 			for (Feature aFeature: this.getFeatures()) {
 				specification.addFeature(aFeature);
@@ -455,12 +471,14 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void clearDerivedPolarionURIs(){
 		linkedDerivedPolarionURIs.clear();
+		setChanged(true);
 	}
 	/**
 	 * clear upwards polarion URI
 	 */
 	public void clearLinkedUpPolarionURIs(){
 		linkedPolarionURIs.clear();
+		setChanged(true);
 	}
 	/**
 	 * add upwards polarion URI
@@ -471,6 +489,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 		if (!this.linkedDerivedPolarionURIs.contains(id)) {
 			// add the child
 			this.linkedDerivedPolarionURIs.add(id);
+			setChanged(true);
 		}
 	}
 	/**
@@ -482,6 +501,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 		if (!this.hyperLinks.contains(id)) {
 			// add the child
 			this.hyperLinks.add(id);
+			setChanged(true);
 		}
 	}
 	/**
@@ -493,6 +513,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 		if (!this.linkedPolarionURIs.contains(id)) {
 			// add the child
 			this.linkedPolarionURIs.add(id);
+			setChanged(true);
 		}
 	}
 	/**
@@ -514,6 +535,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	@SuppressWarnings("unused")
 	private final void setFeatures(Set<Feature> features) {
 		this.features = features;
+		setChanged(true);
 	}
 	/**
 	 * add top level requirement
@@ -523,7 +545,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 		if (features == null) features = new HashSet<Feature>();
 		if (!this.features.contains(feature)) this.features.add(feature);
 		if (this.featureIds == null) this.featureIds = new ArrayList<String>();
-		if (!this.featureIds.contains(feature.getId())) this.featureIds.add(feature.getId());
+		if (!this.featureIds.contains(feature.getId())) {this.featureIds.add(feature.getId());setChanged(true);}
 	}
 	/**
 	 * add the feature id without adding the feature by itself
@@ -531,7 +553,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void addFeatureID(String id){
 		if (this.featureIds == null) this.featureIds = new ArrayList<String>();
-		if (!this.featureIds.contains(id)) this.featureIds.add(id);
+		if (!this.featureIds.contains(id)) {this.featureIds.add(id);setChanged(true);}
 	}
 	/**
 	 * @return the responsible
@@ -544,6 +566,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setResponsible(boolean responsible) {
 		this.responsible = responsible;
+		setChanged(true);
 	}
 	/**
 	 * @return the assignee
@@ -556,6 +579,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setAssignee(String assignee) {
 		this.assignee = assignee;
+		setChanged(true);
 	}
 	/**
 	 * @return the customerreqid
@@ -568,6 +592,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCustomerRequirementId(String customerreqid) {
 		this.customerReqId = customerreqid;
+		setChanged(true);
 	}
 	/**
 	 * add a attachment
@@ -578,14 +603,14 @@ public class Specification extends Bean implements Visitable ,Serializable{
 		if (attachments == null) attachments = new ArrayList<Attachment>();
 		if (!this.attachments.contains(attachments)) this.attachments.add(anAttachment);
 		if (this.attachmentIds == null) this.attachmentIds = new ArrayList<String>();
-		if (!this.attachmentIds.contains(anAttachment.getId())) this.attachmentIds.add(anAttachment.getId());
+		if (!this.attachmentIds.contains(anAttachment.getId())) {this.attachmentIds.add(anAttachment.getId());setChanged(true);}
 	}
 	/**
 	 * add a supplier
 	 * @param supplier
 	 */
 	public void addSupplier(String supplier) {
-		if (!this.supplier.contains(supplier)) this.supplier.add(supplier);
+		if (!this.supplier.contains(supplier)) {this.supplier.add(supplier);setChanged(true);}
 	}
 	
 	/**
@@ -593,7 +618,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 * @param brand
 	 */
 	public void addBrand(String brand) {
-		if (!this.brands.contains(brand)) this.brands.add(brand);
+		if (!this.brands.contains(brand)) {this.brands.add(brand);setChanged(true);}
 	}
 	
 	/**
@@ -601,14 +626,14 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 * @param projectname
 	 */
 	public void addProjectname(String projectname) {
-		if (!this.projectnames.contains(projectname)) this.projectnames.add(projectname);
+		if (!this.projectnames.contains(projectname)) {this.projectnames.add(projectname);setChanged(true);}
 	}
 	/**
 	 * add a market
 	 * @param market
 	 */
 	public void addMarket(String market) {
-		if (!this.markets.contains(market)) this.markets.add(market);
+		if (!this.markets.contains(market)) {this.markets.add(market);setChanged(true);}
 	}
 	
 	/**
@@ -622,6 +647,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setPolarionUri(String uri) {
 		this.uri = uri;
+		setChanged(true);
 	}
 	/**
 	 * @return the AttachmentIds
@@ -634,6 +660,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	private void setAttachmentIds(List<String> attachmentIds) {
 		this.attachmentIds = attachmentIds;
+		setChanged(true);
 	}
 	/**
 	 * @return the featureIds
@@ -646,6 +673,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	private void setFeatureIds(List<String> featureIds) {
 		this.featureIds = featureIds;
+		setChanged(true);
 	}
 	/**
 	 * @return the category
@@ -658,6 +686,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCategory(String category) {
 		this.category = category;
+		setChanged(true);
 	}
 	/**
 	 * @return the sourceID
@@ -670,6 +699,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setSourceID(String sourceID) {
 		this.sourceID = sourceID;
+		setChanged(true);
 	}
 	
 	/**
@@ -683,6 +713,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setFunctionality(String functionality) {
 		this.functionality = functionality;
+		setChanged(true);
 	}
 	/**
 	 * @return the specificationType
@@ -695,6 +726,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public void setSpecificationType(String type) {
 		this.specificationType = type;
+		setChanged(true);
 	}
 	
 	/**

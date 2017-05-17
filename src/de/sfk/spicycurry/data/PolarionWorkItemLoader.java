@@ -86,14 +86,14 @@ public class PolarionWorkItemLoader implements Closeable {
 			beginSession(url, name, password);
 		}
 
-		protected void beginSession(String url, String name, String password) throws Exception {
+		protected synchronized void  beginSession(String url, String name, String password) throws Exception {
+			if (isInitialized) return;
+			
 			try {
-				
-				factory = new WebServiceFactory(url);
-				
 				// setup Web Service
-				sessionService = factory.getSessionService();
-				trackerService = factory.getTrackerService();
+				if (factory == null) factory = new WebServiceFactory(url);
+				if (sessionService == null) sessionService = factory.getSessionService();
+				if (trackerService == null) trackerService = factory.getTrackerService();
 				
 				sessionService.logIn(name, password);
 				this.isInitialized = true;
@@ -128,7 +128,7 @@ public class PolarionWorkItemLoader implements Closeable {
 		 * @return
 		 * @throws Exception
 		 */
-		public WorkItem[] getWorkItemsByQuery(String query,String sort) throws Exception {
+		public synchronized WorkItem[] getWorkItemsByQuery(String query,String sort) throws Exception {
 			return getWorkItemsByQuery(query, sort, 0);
 		}
 		/**
@@ -140,7 +140,7 @@ public class PolarionWorkItemLoader implements Closeable {
 		 * @return
 		 * @throws Exception
 		 */
-		private WorkItem[] getWorkItemsByQuery(String query,String sort, int retry) throws Exception {
+		private synchronized WorkItem[] getWorkItemsByQuery(String query,String sort, int retry) throws Exception {
 			
 			WorkItem[] items = null;
 			try {
@@ -175,7 +175,7 @@ public class PolarionWorkItemLoader implements Closeable {
 		 * @return
 		 * @throws Exception
 		 */
-		public String[] getWorkItemsUriByQuery(String query,String sort) throws Exception {
+		public synchronized String[] getWorkItemsUriByQuery(String query,String sort) throws Exception {
 			
 			String[] theUris = null;
 			try {
@@ -792,7 +792,7 @@ public class PolarionWorkItemLoader implements Closeable {
 		 * @param polarionUri
 		 * @return work item
 		 */
-		public WorkItem getWorkItemByUri(String uri) {
+		public synchronized WorkItem getWorkItemByUri(String uri) {
 			try {
 				return this.trackerService.getWorkItemByUri(uri);
 			} catch (RemoteException e) {
@@ -807,7 +807,7 @@ public class PolarionWorkItemLoader implements Closeable {
 		 * @param id
 		 * @return work item
 		 */
-		public WorkItem getWorkItemById(String project, String id) {
+		public synchronized WorkItem getWorkItemById(String project, String id) {
 			try {
 				return this.trackerService.getWorkItemById(project, id);
 			} catch (RemoteException e) {

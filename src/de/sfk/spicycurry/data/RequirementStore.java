@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.temporal.*;
 import java.time.temporal.Temporal;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.polarion.alm.ws.client.types.tracker.WorkItem;
 
@@ -43,8 +44,8 @@ public class RequirementStore implements Closeable {
 		public static RequirementStore db = new RequirementStore();
 	
 		// store
-		private HashMap<String, Requirement> requirements = new HashMap<String,Requirement>(); // byId
-		private HashMap<String, Requirement> requirementsByUri = new HashMap<String, Requirement>(); //byURI
+		private ConcurrentHashMap<String, Requirement> requirements = new ConcurrentHashMap<String,Requirement>(); // byId
+		private ConcurrentHashMap<String, Requirement> requirementsByUri = new ConcurrentHashMap<String, Requirement>(); //byURI
 		private IPersistor persistor = Globals.Persistor;
 		
 		// polarion helpers
@@ -284,21 +285,6 @@ public class RequirementStore implements Closeable {
 					if (anItem != null){
 						Requirement aRequirement = 	this.add(anItem, true);
 						if (aRequirement != null) {
-/*							
-							try {
-								persistor.begin();
-								persistor.persist(aRequirement);
-								persistor.commit();
-								
-							} catch (Exception e) {
-								
-								if (logger.isDebugEnabled())
-									logger.debug(e.getMessage());
-								else if (logger.isErrorEnabled())
-										logger.error(e.getStackTrace());
-
-							}
-*/
 							i++;
 							if (i % 1000 == 0)
 								System.out.print('.');
@@ -323,7 +309,6 @@ public class RequirementStore implements Closeable {
 			}
 			
 			// rollback & close  
-			persistor.rollback();
 			loader.close();
 			
 			return false;
@@ -339,7 +324,7 @@ public class RequirementStore implements Closeable {
 		 * persist them all
 		 * @return
 		 */
-		public boolean persist(){
+		public synchronized boolean persist(){
 			long i = 0;
 			
 			for (Bean aBean: requirements.values()){
@@ -360,12 +345,13 @@ public class RequirementStore implements Closeable {
 		/**
 		 * open persistence
 		 */
-		private void open() {
+		private synchronized void open() {
 			try {
 
 				long i =0;
 				Query aQueryRequirement =
 						persistor.getEm().createQuery("select r from Requirement r");
+				aQueryRequirement.setLockMode(LockModeType.NONE);
 				@SuppressWarnings("unchecked")
 				List<Requirement> theRequirementResults = aQueryRequirement.getResultList();
 			    for (Requirement r : theRequirementResults) {

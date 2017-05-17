@@ -160,6 +160,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setJiraLink(String jiraLink) {
 		this.jiraLink = jiraLink;
+		setChanged(true);
 	}
 	/**
 	 * @return polarion uri of the requirement
@@ -215,6 +216,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setTitle(String title) {
 		this.title = title;
+		setChanged(true);
 	}
 	/**
 	 * @return the description
@@ -227,6 +229,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setDescription(String text) {
 		this.description = text;
+		setChanged(true);
 	}
 	/**
 	 * @return the status
@@ -239,6 +242,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setStatus(String status) {
 		this.status = status;
+		setChanged(true);
 	}
 	/**
 	 * @return the accepted
@@ -251,6 +255,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setAccepted(boolean accepted) {
 		this.accepted = accepted;
+		setChanged(true);
 	}
 	/**
 	 * @return the createdOn
@@ -263,6 +268,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setCreatedOn(Calendar createdOn) {
 		this.createdOn = createdOn;
+		setChanged(true);
 	}
 	/**
 	 * @return the updatedOn
@@ -275,6 +281,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setUpdatedOn(Calendar updatedOn) {
 		this.updatedOn = updatedOn;
+		setChanged(true);
 	}
 		
 	/**
@@ -288,6 +295,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setResponsible(boolean responsible) {
 		this.responsible = responsible;
+		setChanged(true);
 	}
 	
 	/**
@@ -301,6 +309,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setCustomerRequirementId(String customerreqid) {
 		this.requirement.setCustomerRequirementId(customerreqid);
+		setChanged(true);
 	}
 	
 	/**
@@ -308,6 +317,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setPolarionUri(String uri) {
 		this.requirement.setPolarionUri(uri);
+		setChanged(true);
 	}
 	
 	/**
@@ -321,6 +331,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public void setCategory(String category) {
 		this.category = category;
+		setChanged(true);
 	}
 	/**
 	 * @return the sourceID
@@ -368,7 +379,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 * @param customerReqType the customerReqType to set
 	 */
 	public void setCustomerReqType(String customerReqType) {
-		this.setCustomerReqType(customerReqType);
+		this.requirement.setCustomerReqType(customerReqType);
 	}
 	
 	/**

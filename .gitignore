@@ -3,4 +3,5 @@
 /target/
 log/
 dbserver.lock
-data/
+/data/
+*.db

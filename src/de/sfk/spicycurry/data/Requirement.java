@@ -204,6 +204,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setSourceModule(String sourceModule) {
 		this.sourceModule = sourceModule;
+		setChanged(true);
 	}
 	/**
 	 * @return the title
@@ -216,18 +217,21 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setTitle(String title) {
 		this.title = title;
+		setChanged(true);
 	}
 	/**
 	 * @return the description
 	 */
 	public String getDescription() {
 		return description;
+		
 	}
 	/**
 	 * @param text the description to set
 	 */
 	public void setDescription(String text) {
 		this.description = text;
+		setChanged(true);
 	}
 	/**
 	 * @return the status
@@ -240,6 +244,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setStatus(String status) {
 		this.status = status;
+		setChanged(true);
 	}
 	/**
 	 * @return the accepted
@@ -252,6 +257,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setAccepted(boolean accepted) {
 		this.accepted = accepted;
+		setChanged(true);
 	}
 	/**
 	 * @return the createdOn
@@ -264,6 +270,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCreatedOn(Calendar createdOn) {
 		this.createdOn = createdOn;
+		setChanged(true);
 	}
 	/**
 	 * @return the updatedOn
@@ -276,6 +283,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setUpdatedOn(Calendar updatedOn) {
 		this.updatedOn = updatedOn;
+		setChanged(true);
 	}
 	/**
 	 * @return the author
@@ -288,6 +296,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setAuthor(String author) {
 		this.author = author;
+		setChanged(true);
 	}
 	/**
 	 * @return the markets
@@ -300,6 +309,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setMarkets(List<String> markets) {
 		this.markets = markets;
+		setChanged(true);
 	}
 	/**
 	 * @return the brands
@@ -312,6 +322,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setBrands(List<String> brands) {
 		this.brands = brands;
+		setChanged(true);
 	}
 	/**
 	 * @return Collection of Requirements - lazy load from Requirementsstore
@@ -359,6 +370,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 			// add the top level features from me to the child
 			for (Feature aFeature: this.getFeatures()) {
 				req.addFeature(aFeature);
+				setChanged(true);
 			}
 		}
 	}
@@ -389,6 +401,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void clearLinkedUpPolarionURIs(){
 		linkedPolarionURIs.clear();
+		setChanged(true);
 	}
 	/**
 	 * add upwards polarion URI
@@ -399,6 +412,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 		if (!this.linkedDerivedPolarionURIs.contains(id)) {
 			// add the child
 			this.linkedDerivedPolarionURIs.add(id);
+			setChanged(true);
 		}
 	}
 	/**
@@ -431,6 +445,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	@SuppressWarnings("unused")
 	private final void setFeatures(Set<Feature> features) {
 		this.features = features;
+		setChanged(true);
 	}
 	/**
 	 * add top level requirement
@@ -439,7 +454,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	public void addFeature(Feature feature) {
 		if (features == null) features = new HashSet<Feature>();
 		if (!this.features.contains(feature)) this.features.add(feature);
-		if (this.featureIds == null) this.featureIds = new ArrayList<String>();
+		if (this.featureIds == null) { this.featureIds = new ArrayList<String>();setChanged(true);}
 		if (!this.featureIds.contains(feature.getId())) this.featureIds.add(feature.getId());
 	}
 	/**
@@ -453,6 +468,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setResponsible(boolean responsible) {
 		this.responsible = responsible;
+		setChanged(true);
 	}
 	/**
 	 * @return the assignee
@@ -465,6 +481,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setAssignee(String assignee) {
 		this.assignee = assignee;
+		setChanged(true);
 	}
 	/**
 	 * @return the customerreqid
@@ -477,6 +494,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCustomerRequirementId(String customerreqid) {
 		this.customerReqId = customerreqid;
+		setChanged(true);
 	}
 	/**
 	 * add a attachment
@@ -487,7 +505,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 		if (attachments == null) attachments = new ArrayList<Attachment>();
 		if (!this.attachments.contains(attachments)) this.attachments.add(anAttachment);
 		if (this.attachmentIds == null) this.attachmentIds = new ArrayList<String>();
-		if (!this.attachmentIds.contains(anAttachment.getId())) this.attachmentIds.add(anAttachment.getId());
+		if (!this.attachmentIds.contains(anAttachment.getId())) {this.attachmentIds.add(anAttachment.getId());setChanged(true);}
 	}
 	/**
 	 * add a hyperlink
@@ -498,6 +516,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 		if (!this.hyperlinks.contains(id)) {
 			// add the child
 			this.hyperlinks.add(id);
+			setChanged(true);
 		}
 	}
 	/**
@@ -505,28 +524,28 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 * @param brand
 	 */
 	public void addBrand(String brand) {
-		if (!this.brands.contains(brand)) this.brands.add(brand);
+		if (!this.brands.contains(brand)) {this.brands.add(brand);setChanged(true);}
 	}
 	/**
 	 * add a customer brand
 	 * @param market
 	 */
 	public void addCustomerBrand(String brand) {
-		if (!this.customerBrands.contains(brand)) this.customerBrands.add(brand);
+		if (!this.customerBrands.contains(brand)) {this.customerBrands.add(brand);setChanged(true);}
 	}
 	/**
 	 * add a market
 	 * @param market
 	 */
 	public void addMarket(String market) {
-		if (!this.markets.contains(market)) this.markets.add(market);
+		if (!this.markets.contains(market)) {this.markets.add(market);setChanged(true);}
 	}
 	/**
 	 * add a customer market
 	 * @param market
 	 */
 	public void addCustomerMarket(String market) {
-		if (!this.customerMarkets.contains(market)) this.customerMarkets.add(market);
+		if (!this.customerMarkets.contains(market)) {this.customerMarkets.add(market);setChanged(true);}
 	}
 	/**
 	 * @return the uri
@@ -539,6 +558,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setPolarionUri(String uri) {
 		this.uri = uri;
+		setChanged(true);
 	}
 	/**
 	 * @return the AttachmentIds
@@ -551,6 +571,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	private void setAttachmentIds(List<String> attachmentIds) {
 		this.attachmentIds = attachmentIds;
+		setChanged(true);
 	}
 	/**
 	 * @return the featureIds
@@ -563,6 +584,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	private void setFeatureIds(List<String> featureIds) {
 		this.featureIds = featureIds;
+		setChanged(true);
 	}
 	/**
 	 * @return the category
@@ -575,6 +597,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCategory(String category) {
 		this.category = category;
+		setChanged(true);
 	}
 	/**
 	 * @return the sourceID
@@ -587,6 +610,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setSourceID(String sourceID) {
 		this.sourceID = sourceID;
+		setChanged(true);
 	}
 	/**
 	 * @return the customerstatus
@@ -599,6 +623,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCustomerStatus(String customerstatus) {
 		this.customerStatus = customerstatus;
+		setChanged(true);
 	}
 	/**
 	 * @return the customerType
@@ -611,6 +636,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCustomerType(String customerType) {
 		this.customerType = customerType;
+		setChanged(true);
 	}
 	/**
 	 * @return the customerReqType
@@ -623,6 +649,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCustomerReqType(String customerReqType) {
 		this.customerReqType = customerReqType;
+		setChanged(true);
 	}
 	/**
 	 * @return the updateType
@@ -635,6 +662,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setUpdateType(String updateType) {
 		this.updateType = updateType;
+		setChanged(true);
 	}
 	/**
 	 * @return the outline
@@ -662,6 +690,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCustomerUpdatedOn(Calendar customerUpdatedOn) {
 		this.customerUpdatedOn = customerUpdatedOn;
+		setChanged(true);
 	}
 	/**
 	 * @return the customerRequirementTitle
@@ -674,6 +703,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public void setCustomerRequirementTitle(String customerRequirementTitle) {
 		this.customerRequirementTitle = customerRequirementTitle;
+		setChanged(true);
 	}
 	/**
 	 * visitor-pattern visit by accept 

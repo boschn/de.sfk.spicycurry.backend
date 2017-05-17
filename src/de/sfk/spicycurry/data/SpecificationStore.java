@@ -14,7 +14,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.persistence.LockModeType;
 import javax.persistence.Query;
 
 import org.apache.logging.log4j.LogManager;
@@ -45,8 +47,8 @@ public class SpecificationStore implements Closeable {
 	public static SpecificationStore db = new SpecificationStore();
 
 	// store
-	private HashMap<String, Specification> specifications = new HashMap<String,Specification>(); // byId
-	private HashMap<String, Specification> specificationsByUri = new HashMap<String, Specification>(); //byURI
+	private ConcurrentHashMap<String, Specification> specifications = new ConcurrentHashMap<String,Specification>(); // byId
+	private ConcurrentHashMap<String, Specification> specificationsByUri = new ConcurrentHashMap<String, Specification>(); //byURI
 	private IPersistor persistor = Globals.Persistor;
 	
 	// polarion helpers
@@ -324,7 +326,6 @@ public class SpecificationStore implements Closeable {
 		}
 		
 		// rollback & close  
-		persistor.rollback();
 		loader.close();
 		
 		return false;
@@ -340,18 +341,18 @@ public class SpecificationStore implements Closeable {
 	/**
 	 * open persistence
 	 */
-	private void open() {
+	private synchronized void open() {
 		try {
 
 			long i =0;
 			Query aQuerySpecification =
 					persistor.getEm().createQuery("select r from Specification r");
+			aQuerySpecification.setLockMode(LockModeType.NONE);
 			@SuppressWarnings("unchecked")
 			List<Specification> theSpecificationResults = aQuerySpecification.getResultList();
 		    for (Specification r : theSpecificationResults) {
 		        	this.add(r, false);
 		        	i++;
-		        	if (i % 1000 == 0) System.out.print(".");
 		    }
 		     System.out.println();
 			} catch (Exception e) {
@@ -449,7 +450,7 @@ public class SpecificationStore implements Closeable {
 	 * persist them all
 	 * @return
 	 */
-	public boolean persist(){
+	public synchronized boolean persist(){
 		long i = 0;
 		
 		for (Bean aBean: specifications.values()){

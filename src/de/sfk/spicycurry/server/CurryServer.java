@@ -5,6 +5,7 @@ package de.sfk.spicycurry.server;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -100,9 +101,10 @@ public class CurryServer extends Thread {
         this.loadChores();
         // default chores
         if (chores.size()<=3){
-        	chores.add(new Chore("feed features from polarion", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "polarion" }));
-        	chores.add(new Chore("feed requirement from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Requirement.class.getName(), "polarion" }));
-        	chores.add(new Chore("feed specifications from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Specification.class.getName(), "polarion" }));
+        	chores.add(new Chore((long) 110,"feed features from jira", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "jira" }));
+        	chores.add(new Chore((long) 120,"feed features from polarion", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "polarion" }));
+        	chores.add(new Chore((long) 200,"feed requirement from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Requirement.class.getName(), "polarion" }));
+        	chores.add(new Chore((long) 300,"feed specifications from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Specification.class.getName(), "polarion" }));
         }
         
     	// load all Features
@@ -137,10 +139,22 @@ public class CurryServer extends Thread {
     	 while ( !isInterrupted() ){
     		 try{
     			 Instant changeDate = Instant.now();
+ 
     			 // run the chores
     			 for(Chore aChore: chores){
-    					 if (aChore.run(changeDate)) logger.info(aChore.getDescription() + " run with success");
-    					 else logger.info(aChore.getDescription() + " failed while running");
+    				// skip if the chore is running
+    				if (!aChore.isRunning()) 
+	    				// check if the chore is due
+	    				if (aChore.getLastExecuted() == null || (aChore.getLastExecuted() != null && 
+	    						(Duration.between(aChore.getLastExecuted().toInstant(), Instant.now()).toMinutes()) > aChore.getIntervallPeriod().toMinutes() ))
+	    	    					// run the chore in an own thread
+	    	    					//
+	    	    				 	new Thread() {
+	    	    				 		public void run(){
+	    	    				 			this.setName("Chore-" + aChore.getId().toString());
+	    	    				 			aChore.run(changeDate);
+	    	    				 		}
+	    	    				 	}.start();
     			 }
     			 
     			 // lay to sleep
