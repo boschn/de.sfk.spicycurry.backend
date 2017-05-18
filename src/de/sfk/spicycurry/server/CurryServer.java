@@ -152,7 +152,9 @@ public class CurryServer extends Thread {
 	    	    				 	new Thread() {
 	    	    				 		public void run(){
 	    	    				 			this.setName("Chore-" + aChore.getId().toString());
+	    	    				 			logger.info("thread " + this.getName() + " started");
 	    	    				 			aChore.run(changeDate);
+	    	    				 			logger.info("thread " + this.getName() + " finished");
 	    	    				 		}
 	    	    				 	}.start();
     			 }

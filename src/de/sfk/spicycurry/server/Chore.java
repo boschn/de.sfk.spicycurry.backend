@@ -293,6 +293,16 @@ public class Chore extends Bean{
 						this.lastLog = "polarion load failed - see log file";
 						return false;
 					}
+				}else if (ForeignStore.toUpperCase().contains("JIRA")){
+					if (JiraIssuesStore.db.loadAllJira(lastChangeReferenceDate)){
+						// start persisting it all
+						FeatureStore.db.persist();
+						this.lastLog = "polarion load succeeded";
+						return true;
+					}else {
+						this.lastLog = "polarion load failed - see log file";
+						return false;
+					}
 				}else {
 					this.lastLog = "other datasource not supported";
 					return false;
@@ -321,20 +331,19 @@ public class Chore extends Bean{
 	public synchronized boolean run(Temporal newRunTimestamp) {
 		Temporal changeReferenceDate = null;
 		boolean result = false;
-		if (newRunTimestamp == null) newRunTimestamp = Instant.now();
-		
-		// check if the chore is due
-		if (this.getLastExecuted() != null) {
-			// set the incremental change date to last
-			changeReferenceDate = (Temporal) this.getLastExecuted();
-			// check 
-			Duration passed = Duration.between(changeReferenceDate, Instant.now());
-			// check if we are due
-			if (passed.toMinutes() < this.getIntervallPeriod().toMinutes()) return false;
-			
-		}
-		
 		try {
+			if (newRunTimestamp == null) newRunTimestamp = Instant.now();
+			
+			// check if the chore is due
+			if (this.getLastExecuted() != null) {
+				// set the incremental change date to last
+				changeReferenceDate = (Temporal) this.getLastExecuted().toInstant();
+				// check 
+				Duration passed = Duration.between(changeReferenceDate, Instant.now());
+				// check if we are due
+				if (passed.toMinutes() < this.getIntervallPeriod().toMinutes()) return false;
+				
+			}
 			
 			this.setRunning(true);
 			
@@ -354,6 +363,7 @@ public class Chore extends Bean{
 				}
 			
 		}catch(Exception e){
+
 			logger.catching(e);
 			this.setLastLog(getLastLog() + "\n" + e.getLocalizedMessage());
 		}
@@ -365,7 +375,11 @@ public class Chore extends Bean{
 		
 		if (result){
 			this.setLastStatus(StatusType.Success);
-		} else this.setLastStatus(StatusType.Failed);
+			logger.info("chore done with success");
+		} else {
+			this.setLastStatus(StatusType.Failed);
+			logger.info("chore failed");
+		}
 		
 		// persist
 		this.persist();
