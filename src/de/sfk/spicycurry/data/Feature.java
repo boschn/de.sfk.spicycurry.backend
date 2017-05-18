@@ -23,7 +23,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	private static final long serialVersionUID = 4L;
 	
 	@Id
-	@Column(name="feature_id", length=1024)
+	@Column(length=1024)
 	private String id = null;
 	
 	@Column(nullable=true, length = 1024)
@@ -44,18 +44,18 @@ public class Feature extends Bean implements Serializable, Visitable {
 	private Calendar createdOn;
 	private Calendar updatedOn;
 	
+	//@Transient
 	@OneToOne(cascade={CascadeType.PERSIST})
-	@JoinColumn(name = "requirement_id")
+	@JoinColumn(name = "requirement_id", nullable=true)
 	private Requirement requirement = null;
 	
+	//@Transient
 	@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.MERGE})
-	@JoinColumn(name = "feature_id", nullable=true)
+	@JoinColumn(name = "feat_id", nullable=true)
 	private List<JiraIssueFeature> jiraIssueFeatures = new ArrayList<JiraIssueFeature>();
 	
 	@Version
 	private Timestamp lastUpdate;
-
-	
 	
 	/**
 	 * constructor
@@ -96,14 +96,25 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	private void setRequirement(Requirement requirement) {
 		this.requirement = requirement;
-		convertFromRequirement(requirement);
+		updateFromRequirement(requirement);
 		requirement.addFeature(this);
+	}
+	/**
+	 * update the data from the requirement
+	 */
+	public void updateFromRequirement(){
+		updateFromRequirement(this.requirement);
 	}
 	/**
 	 * set the internal variables
 	 * @param requirement
 	 */
-	private void convertFromRequirement(Requirement requirement) {
+	private void updateFromRequirement(Requirement requirement) {
+		// Customer Requirement ID
+		if (requirement.getCustomerRequirementId()!= null)
+			this.setId(requirement.getCustomerRequirementId());
+		else setId(requirement.getId());
+		
 		// take over the nulled values
 		if (category == null) 
 			this.setCategory(requirement.getCategory());
