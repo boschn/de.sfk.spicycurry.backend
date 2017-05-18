@@ -77,6 +77,7 @@ public class JiraIssueFeature extends JiraIssue {
 	@Column(nullable=true)
 	private Calendar suggestedDate;
 	
+	// a jira issue belongs to one feature
 	@OneToOne(fetch = FetchType.LAZY,cascade={CascadeType.MERGE})
 	@JoinColumn(name = "feature_id", nullable=true)
 	private Feature feature = null;

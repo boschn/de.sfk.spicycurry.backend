@@ -49,7 +49,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	@Column(nullable=true, columnDefinition ="CLOB")
 	private String description;
 	
-	@Column(nullable=true, length = 1024)
+	@Column(name = "customerReqId",nullable=true, length = 1024)
 	private String customerReqId;
 	
 	@Column(nullable=true, length = 1024)
@@ -82,9 +82,9 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	@Column(nullable=false)
 	private boolean tracking; // true if the requirement is a tracking requirement / linked to a feature
 	
-	@OneToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name = "feature_id", nullable=true)
-	private Feature feature = null;
+	// if the requirement is indeed a tracking feature - store the link to the feature object here
+	@OneToOne(cascade={CascadeType.PERSIST})
+	private Feature trackingFeature = null;
 	
 	@Column(nullable=false)
 	private boolean accepted; // true if the customer accepted responsibility
@@ -124,8 +124,6 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	private List<String> customerBrands = new ArrayList<String>();
 	
 	@Transient
-	// @ManyToMany (cascade= CascadeType.MERGE)
-	// @JoinColumn(name = "requirement_id", nullable=true)
 	private HashMap<String, Requirement> subRequirements = null;
 	
 	@ElementCollection
@@ -133,10 +131,13 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	@ElementCollection
 	private List<String> linkedPolarionURIs = new ArrayList<String>();
 	
+	//if the requirement is derived from a one or more features than
+	//save here the tracking features where the requirement belongs to
 	@OneToMany (fetch = FetchType.LAZY,cascade= CascadeType.MERGE)
 	@JoinColumn(name = "feature_id", nullable=true)
 	private Set<Feature> features = new HashSet<Feature>();
 	
+	// same as above but just the ids (extra)
 	@ElementCollection
 	private List<String> featureIds = new ArrayList<String>();
 	
@@ -452,10 +453,11 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 * @param req
 	 */
 	public void addFeature(Feature feature) {
+		
 		if (features == null) features = new HashSet<Feature>();
-		if (!this.features.contains(feature)) this.features.add(feature);
+		else if (!this.features.contains(feature)) this.features.add(feature);
 		if (this.featureIds == null) { this.featureIds = new ArrayList<String>();setChanged(true);}
-		if (!this.featureIds.contains(feature.getId())) this.featureIds.add(feature.getId());
+		else if (!this.featureIds.contains(feature.getId())) this.featureIds.add(feature.getId());
 	}
 	/**
 	 * @return the responsible

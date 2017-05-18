@@ -13,7 +13,7 @@ import javax.persistence.Transient;
  * @author boris.schneider
  *
  */
-@MappedSuperclass
+
 public class Bean {
 	@Transient
 	private IPersistor persistor = null;
@@ -70,6 +70,9 @@ public class Bean {
 		this.isCreated=false;
 		this.isChanged=false;
 		this.isLoaded = true;
+	}
+	public boolean isLoaded() {
+		return isLoaded;
 	}
 
 }

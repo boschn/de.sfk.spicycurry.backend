@@ -29,6 +29,7 @@ import de.sfk.spicycurry.Globals;
 import de.sfk.spicycurry.data.Bean;
 import de.sfk.spicycurry.data.Feature;
 import de.sfk.spicycurry.data.FeatureStore;
+import de.sfk.spicycurry.data.JiraIssueStore;
 import de.sfk.spicycurry.data.Requirement;
 import de.sfk.spicycurry.data.RequirementStore;
 import de.sfk.spicycurry.data.Specification;
@@ -53,7 +54,7 @@ public class Chore extends Bean{
 	public enum StatusType {
 		Failed,
 		Success,
-		Enqueued
+		Enqueued, Running
 	}
 	
 	@Transient
@@ -65,10 +66,14 @@ public class Chore extends Bean{
 	// jobType what to do
 	@Column(nullable=true, length=2048)
 	private String description = "";
-		
+	
 	// jobType what to do
 	@Column
 	private JobType job = JobType.Nothing;
+	
+	// flag to set the chore enabled
+	@Column
+	private boolean enabled = true;
 	
 	// Arguments of the job type
 	@ElementCollection
@@ -78,17 +83,21 @@ public class Chore extends Bean{
 	@Column
 	private Duration intervallPeriod = Duration.ofHours(12);
 	
-	// when executed
+	// when started
+	@Column(nullable=true)
+	private Timestamp lastStart;
+	
+	// when finished
 	@Column(nullable=true)
 	private Timestamp lastExecuted;
-	
+		
 	// jobType what to do
 	@Column(nullable=true, length=2048)
 	private String lastLog = "";
 	
 	// last status
 	@Column
-	private StatusType lastStatus = StatusType.Enqueued;
+	private StatusType status = StatusType.Enqueued;
 	
 	@Version
 	private Timestamp lastUpdate;
@@ -132,18 +141,32 @@ public class Chore extends Bean{
 	public Timestamp getLastExecuted() {
 		return lastExecuted;
 	}
+	/**
+	 * @return the lastExecuted
+	 */
+	public Timestamp getLastStart() {
+		return lastStart;
+	}
 
 	public boolean isRunning() {
 		return isRunning;
 	}
 	public void setRunning(boolean isRunning) {
 		this.isRunning = isRunning;
+		
+		
 	}
 	/**
 	 * @param lastExecuted the lastExecuted to set
 	 */
 	public void setLastExecuted(Timestamp lastExecuted) {
 		this.lastExecuted = lastExecuted;
+	}
+	/**
+	 * @param time
+	 */
+	public void setLastStart(Timestamp time) {
+		this.lastStart =  time;
 	}
 
 	/**
@@ -228,6 +251,12 @@ public class Chore extends Bean{
 		setChanged(true);
 	}
 
+	public boolean isEnabled() {
+		return enabled;
+	}
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
 	/**
 	 * @param lastLog the lastLog to set
 	 */
@@ -239,15 +268,15 @@ public class Chore extends Bean{
 	/**
 	 * @return the lastStatus
 	 */
-	public StatusType getLastStatus() {
-		return lastStatus;
+	public StatusType getStatus() {
+		return status;
 	}
 
 	/**
 	 * @param lastStatus the lastStatus to set
 	 */
-	public void setLastStatus(StatusType lastStatus) {
-		this.lastStatus = lastStatus;
+	public void setStatus(StatusType lastStatus) {
+		this.status = lastStatus;
 		setChanged(true);
 	}
 	/**
@@ -295,10 +324,10 @@ public class Chore extends Bean{
 						return false;
 					}
 				}else if (ForeignStore.toUpperCase().contains("JIRA")){
-					if (JiraIssuesStore.db.loadAllJira(lastChangeReferenceDate)){
+					if (JiraIssueStore.db.loadAllFeatures()){
 						// start persisting it all
-						FeatureStore.db.persist();
-						this.lastLog = "polarion load succeeded";
+						JiraIssueStore.db.persist();
+						this.lastLog = "jira load succeeded";
 						return true;
 					}else {
 						this.lastLog = "polarion load failed - see log file";
@@ -334,7 +363,10 @@ public class Chore extends Bean{
 		boolean result = false;
 		try {
 			if (newRunTimestamp == null) newRunTimestamp = Instant.now();
-			
+			if (this.isLoaded()) this.refresh();
+			if (!this.isEnabled()){
+				return true;
+			}
 			// check if the chore is due
 			if (this.getLastExecuted() != null) {
 				// set the incremental change date to last
@@ -347,6 +379,9 @@ public class Chore extends Bean{
 			}
 			
 			this.setRunning(true);
+			this.setStatus(StatusType.Running);
+			this.setLastStart(Timestamp.from(Instant.now()));
+			this.persist();
 			
 			// run the command
 			switch (this.getJob()){
@@ -375,10 +410,10 @@ public class Chore extends Bean{
 		this.setLastExecuted(Timestamp.from((Instant)newRunTimestamp));
 		
 		if (result){
-			this.setLastStatus(StatusType.Success);
+			this.setStatus(StatusType.Success);
 			logger.info("chore done with success");
 		} else {
-			this.setLastStatus(StatusType.Failed);
+			this.setStatus(StatusType.Failed);
 			logger.info("chore failed");
 		}
 		
@@ -387,5 +422,6 @@ public class Chore extends Bean{
 		
 		return true;
 	}
+	
 	
 }

@@ -781,9 +781,13 @@ public class PolarionWorkItemLoader implements Closeable {
 			// use existing requirment to create feature
 			if (feature != null) 
 				requirement = feature.getRequirement();
+			
 			// convert
 			requirement = this.convertToRequirement(item, requirement);
-			return new Feature(requirement);
+			if (feature == null) feature = new Feature(requirement);
+			else feature.updateFromRequirement();
+			
+			return feature;
 		}
 
 		/**
@@ -796,8 +800,8 @@ public class PolarionWorkItemLoader implements Closeable {
 			try {
 				return this.trackerService.getWorkItemByUri(uri);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error(e.getLocalizedMessage());
+				if (logger.isDebugEnabled()) logger.catching(e);
 				return null;
 			}
 		}
@@ -811,7 +815,8 @@ public class PolarionWorkItemLoader implements Closeable {
 			try {
 				return this.trackerService.getWorkItemById(project, id);
 			} catch (RemoteException e) {
-				if (logger.isDebugEnabled()) e.printStackTrace();
+				logger.error(e.getLocalizedMessage());
+				if (logger.isDebugEnabled()) logger.catching(e);
 				return null;
 			}
 		}

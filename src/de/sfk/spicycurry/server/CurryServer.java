@@ -102,7 +102,7 @@ public class CurryServer extends Thread {
         // default chores
         if (chores.size()<=3){
         	chores.add(new Chore((long) 110,"feed features from jira", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "jira" }));
-        	chores.add(new Chore((long) 120,"feed features from polarion", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "polarion" }));
+        	chores.add(new Chore((long) 120,"feed features from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Feature.class.getName(), "polarion" }));
         	chores.add(new Chore((long) 200,"feed requirement from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Requirement.class.getName(), "polarion" }));
         	chores.add(new Chore((long) 300,"feed specifications from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Specification.class.getName(), "polarion" }));
         }
@@ -139,14 +139,20 @@ public class CurryServer extends Thread {
     	 while ( !isInterrupted() ){
     		 try{
     			 Instant changeDate = Instant.now();
- 
+    			 	
     			 // run the chores
     			 for(Chore aChore: chores){
     				// skip if the chore is running
-    				if (!aChore.isRunning()) 
+    				if (!aChore.isRunning())
+    					
+    					
 	    				// check if the chore is due
-	    				if (aChore.getLastExecuted() == null || (aChore.getLastExecuted() != null && 
+	    				if 
+	    				  (aChore.isEnabled() && 
+	    				  (aChore.getLastExecuted() == null || 
+	    				        (aChore.getLastExecuted() != null && 
 	    						(Duration.between(aChore.getLastExecuted().toInstant(), Instant.now()).toMinutes()) > aChore.getIntervallPeriod().toMinutes() ))
+	    				  )
 	    	    					// run the chore in an own thread
 	    	    					//
 	    	    				 	new Thread() {
