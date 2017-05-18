@@ -10,6 +10,7 @@ import java.time.Period;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -71,7 +72,7 @@ public class Chore extends Bean{
 	
 	// Arguments of the job type
 	@ElementCollection
-	private ArrayList<String> arguments = new ArrayList<String>();
+	private List<String> arguments = new ArrayList<String>();
 	
 	// period of the intervall until we do it again
 	@Column
@@ -169,7 +170,7 @@ public class Chore extends Bean{
 	/**
 	 * @return the arguments
 	 */
-	public ArrayList<String> getArguments() {
+	public List<String> getArguments() {
 		return arguments;
 	}
 

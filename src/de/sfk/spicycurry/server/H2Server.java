@@ -212,7 +212,7 @@ public class H2Server extends AbstractDBServer {
 			serverH2Postgress.start();
 			
 		} catch (Exception e) {                                                                                 
-		        logger.error("h2 postgress server '"+ getId() + "' failed to start @'" + this.getAddress()); 
+		        logger.error("h2 postgress server '"+ getId() + "' failed to start @'" + this.getAddress()+ ":" + serverH2Postgress.getPort()); 
 		        logger.error(e.getLocalizedMessage());                                                              
 		        if (logger.isDebugEnabled()) logger.catching(e);                                                    
 		        return false;                                                                                       
@@ -235,7 +235,7 @@ public class H2Server extends AbstractDBServer {
 							                    this.getDatabaseFile()
 											  );
 			serverWeb.start();
-			logger.info("h2 web server '"+ getId() + "' started on host '" + getHostName());
+			logger.info("h2 web server '"+ getId() + "' started on host '" + getHostName()+ ":" + serverWeb.getPort());
 			
 		} catch (Exception e) {                                                                                 
 		        logger.error("h2 web server '"+ getId() + "' failed to start @'" + this.getAddress()); 

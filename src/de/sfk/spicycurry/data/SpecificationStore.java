@@ -351,6 +351,7 @@ public class SpecificationStore implements Closeable {
 			@SuppressWarnings("unchecked")
 			List<Specification> theSpecificationResults = aQuerySpecification.getResultList();
 		    for (Specification r : theSpecificationResults) {
+		    		r.setLoaded();
 		        	this.add(r, false);
 		        	i++;
 		    }

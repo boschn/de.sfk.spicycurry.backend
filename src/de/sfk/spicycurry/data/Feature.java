@@ -20,7 +20,7 @@ import de.sfk.spicycurry.Globals;
 public class Feature extends Bean implements Serializable, Visitable {
 
 	@Transient
-	private static final long serialVersionUID = 3L;
+	private static final long serialVersionUID = 4L;
 	
 	@Id
 	@Column(name="feature_id", length=1024)
@@ -48,8 +48,14 @@ public class Feature extends Bean implements Serializable, Visitable {
 	@JoinColumn(name = "requirement_id")
 	private Requirement requirement = null;
 	
+	@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.MERGE})
+	@JoinColumn(name = "feature_id", nullable=true)
+	private List<JiraIssueFeature> jiraIssueFeatures = new ArrayList<JiraIssueFeature>();
+	
 	@Version
 	private Timestamp lastUpdate;
+
+	
 	
 	/**
 	 * constructor
@@ -63,7 +69,7 @@ public class Feature extends Bean implements Serializable, Visitable {
 	}
 	public Feature(Requirement requirement) {
 		super(Globals.Persistor);
-		this.id = requirement.getId();
+		this.id = requirement.getCustomerRequirementId(); // KA-WI-ID is the requirement
 		this.setRequirement	(requirement);
 	}
 
@@ -132,6 +138,20 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 */
 	public Collection<Requirement> loadSubRequirements() {
 		return requirement.loadSubRequirements();
+	}
+	/**
+	 * add an jira feature issue to the feature 
+	 * @param issue
+	 */
+	public void addJiraIssueFeature(JiraIssueFeature issue){
+		if (!jiraIssueFeatures.contains(issue)) jiraIssueFeatures.add(issue);
+	}
+	/**
+	 * gets all linked jira feature issues for this feature
+	 * @return List of JiraIssueFeature
+	 */
+	public List<JiraIssueFeature> getJiraIssueFeatures(){
+		return jiraIssueFeatures;
 	}
 	/**
 	 * visitor-pattern visit by accept 
