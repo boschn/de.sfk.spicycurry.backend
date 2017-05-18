@@ -19,9 +19,14 @@ public class Bean {
 	private IPersistor persistor = null;
 	@Transient
 	private boolean isChanged = false;
+	@Transient
+	private boolean isCreated = false;
+	@Transient
+	private boolean isLoaded = false;
 	
 	protected Bean (IPersistor persistor){
 		this.persistor = persistor;
+		this.isCreated = true;
 	}
 	/*
 	 * return the persistor
@@ -29,24 +34,42 @@ public class Bean {
 	public IPersistor getPersistor(){
 		return persistor;
 	}
-	
+	public void refresh(){
+		if (persistor != null) persistor.refresh(this);
+	}
 	/**
 	 * persist this object
 	 */
 	public void persist(){
 		if (persistor != null) {
+			if (isChanged || isCreated){
 				EntityTransaction aT = persistor.begin();
 				//persistor.getEm().lock(this, LockModeType.NONE); -> throws Entity must be managed to call lock: class de.sfk.spicycurry.data.Feature [1010-MIB3-ALG-144542,PMF01], try merging the detached and try the lock again.  
-				persistor.persist(this);
+				if(isCreated) persistor.persist(this);
+				else if (isLoaded) persistor.update(this);
 				persistor.commit(aT);
+				setCreated(false);
 				setChanged(false);
+				setLoaded();
+			}
 		}
 	}
 	public boolean isChanged() {
 		return isChanged;
 	}
-	public void setChanged(boolean isChanged) {
+	protected void setChanged(boolean isChanged) {
 		this.isChanged = isChanged;
+	}
+	public boolean isCreated() {
+		return isCreated;
+	}
+	protected void setCreated(boolean flag) {
+		this.isCreated = flag;
+	}
+	public void setLoaded(){
+		this.isCreated=false;
+		this.isChanged=false;
+		this.isLoaded = true;
 	}
 
 }

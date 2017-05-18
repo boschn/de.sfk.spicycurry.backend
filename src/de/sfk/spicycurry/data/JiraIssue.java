@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.ElementCollection;
@@ -34,7 +35,7 @@ import net.rcarz.jiraclient.Status;
 @Entity
 @Table(name="JiraIssues")
 @DiscriminatorColumn(name="JiraIssueType")
-@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@Inheritance(strategy=InheritanceType.JOINED)
 public abstract class JiraIssue extends Bean {
 	@Transient
 	private static final long serialVersionUID = 1L;
@@ -72,6 +73,10 @@ public abstract class JiraIssue extends Bean {
 	
 	@ElementCollection
 	private List<String> subIssueIds = new ArrayList<String>();
+	
+	@ElementCollection
+	@CollectionTable(name ="JiraComments", joinColumns = {@JoinColumn(name = "jiraissue_id")})
+	private List<JiraIssueComment> comments = new ArrayList<JiraIssueComment>();
 	
 	private Calendar createdOn;
 	private Calendar updatedOn;
@@ -247,8 +252,26 @@ public abstract class JiraIssue extends Bean {
 	public void setSubIssueIds(List<String> subIssueIds) {
 		this.subIssueIds = subIssueIds;
 	}
+	/**
+	 * add sub issue
+	 * @param key
+	 */
 	public void addSubIssueId(String key) {
 		if (!this.subIssueIds.contains(key)) {this.subIssueIds.add(key);setChanged(true);}
 		
+	}
+	/**
+	 * add a jira issue comment
+	 * @param comment
+	 */
+	public void addComment(JiraIssueComment comment) {
+		comments.add(comment);
+	}
+	/**
+	 * 
+	 * @return list of JiraIssueComments
+	 */
+	public List<JiraIssueComment> getComments(){
+		return this.comments;
 	}
 }

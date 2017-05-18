@@ -94,7 +94,7 @@ public abstract class AbstractPersistor implements IPersistor {
 	}
 
 	@Override
-	public synchronized void persist(Object o) {
+	public synchronized void persist(Bean o) {
 		if (!isOpen()) this.Open();
 		
 		if (em.isOpen()) em.persist(o);
@@ -102,7 +102,27 @@ public abstract class AbstractPersistor implements IPersistor {
 			this.getLogger().debug("EntityManager couldn't open - persist impossible of object " + o.getClass().getName() + " "+ o.toString());
 		
 	}
+	@Override
+	public void refresh(Bean o){
+		if (!isOpen()) this.Open();
+		
+		if (em.isOpen()) em.refresh(o);
+		
+		else if (this.getLogger() != null && this.getLogger().isDebugEnabled())
+			this.getLogger().debug("EntityManager couldn't open - persist impossible of object " + o.getClass().getName() + " "+ o.toString());
 
+	}
+	@Override
+	public void update(Bean o) {
+		
+			if (!isOpen()) this.Open();
+			
+			if (em.isOpen()) em.merge(o);
+			else if (this.getLogger() != null && this.getLogger().isDebugEnabled())
+				this.getLogger().debug("EntityManager couldn't open - persist impossible of object " + o.getClass().getName() + " "+ o.toString());
+
+		
+	}
 	@Override
 	public synchronized void commit(EntityTransaction t) {
 		if (em != null)

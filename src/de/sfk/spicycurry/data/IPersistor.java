@@ -46,7 +46,7 @@ public interface IPersistor {
 	 * persist
 	 * @param o
 	 */
-	void persist(Object o);
+	void persist(Bean bean);
 
 	/**
 	 * start transaction
@@ -69,6 +69,10 @@ public interface IPersistor {
 	 * @param logger
 	 */
 	Logger getLogger();
+
+	void update(Bean bean);
+
+	void refresh(Bean bean);
 
 	
 }

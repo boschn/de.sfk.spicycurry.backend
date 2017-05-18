@@ -14,11 +14,13 @@ import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -36,7 +38,7 @@ import de.sfk.spicycurry.Globals;
 public class JiraIssueFeature extends JiraIssue {
 
 	@Transient
-	private static final long serialVersionUID = 3L;
+	private static final long serialVersionUID = 4L;
 	
 	/**
 	 * fields
@@ -69,17 +71,25 @@ public class JiraIssueFeature extends JiraIssue {
 	@Column(nullable=true, length = 1024)
 	private String schedulingComments;
 	
-	@Transient
+	@Column(nullable=true, length = 1014)
+	private String scheduleType;
+
+	@Column(nullable=true)
+	private Calendar suggestedDate;
+	
+	@OneToOne(fetch = FetchType.LAZY,cascade={CascadeType.MERGE})
+	@JoinColumn(name = "feature_id", nullable=true)
 	private Feature feature = null;
 	
-	@Column(name="feature_id", nullable=true, length = 1024)
-	private String featureId;
+	@Column(nullable=true, length = 1024)
+	private String featureId = null;
 	
 	@ElementCollection
 	private List<String> markets = new ArrayList<String>();
 	
 	@ElementCollection
 	private List<String> brands = new ArrayList<String>();
+
 	
 	/**
 	 * ctor
@@ -285,9 +295,58 @@ public class JiraIssueFeature extends JiraIssue {
 		else return null;
 	}
 	public void setFeatureId(String id) {
+		if (id==null) return;
 		this.featureId = id;
 		if (FeatureStore.db.has(id)) feature = FeatureStore.db.getById(id);
 		else feature = null;
 		setChanged(true);
+	}
+	/**
+	 * type of schedule in issue
+	 * @return
+	 */
+	public String getScheduleType() {
+		return this.scheduleType;
+		
+	}
+	/**
+	 * set the type of schedule
+	 * @param type
+	 */
+	public void setScheduleType(String type) {
+		this.scheduleType=type;
+		setChanged(true);
+		
+	}
+	/**
+	 * set the suggested Date
+	 * @param date
+	 */
+	public void setSuggestedDate(Calendar date) {
+		this.suggestedDate=date;
+		setChanged(true);
+	}
+	public Calendar getSuggestedDate(){
+		return this.suggestedDate;
+	}
+	/**
+	 * set the markets to one market
+	 * @param aValue
+	 */
+	public void setMarket(String aValue) {
+		markets.clear();
+		markets.add(aValue);
+		setChanged(true);
+		
+	}
+	/**
+	 * set the markets to one market
+	 * @param aValue
+	 */
+	public void setBrand(String aValue) {
+		brands.clear();
+		brands.add(aValue);
+		setChanged(true);
+		
 	}
 }

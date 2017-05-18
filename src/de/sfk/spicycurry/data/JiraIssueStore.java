@@ -32,12 +32,12 @@ import net.rcarz.jiraclient.Issue;
  */
 public class JiraIssueStore implements Closeable  {
 
-	private static final String JIRA_PROJECTID = "MIBSERIELH";
-	private static final String JIRA_TYPE = "Feature";
-	private static final String JIRA_FEATURE_QUERY = "project=" + JIRA_PROJECTID + " AND issuetype=" + JIRA_TYPE ;
+	private static final String JIRA_FEATURE_PROJECTID = "MIBSERIELH";
+	private static final String JIRA_FEATURE_TYPE = "Feature";
+	private static final String JIRA_FEATURE_QUERY = "project=" + JIRA_FEATURE_PROJECTID + " AND issuetype=" + JIRA_FEATURE_TYPE ;
 
-	public static final String PROPERTY_JIRA_PROJECTID = "Feature.JIRA.ProjectID";
-	public static final String PROPERTY_JIRA_TYPE = "Feature.JIRA.IssueType";
+	public static final String PROPERTY_JIRA_FEATURE_PROJECTID = "Feature.JIRA.ProjectID";
+	public static final String PROPERTY_JIRA_FEATURE_TYPE = "Feature.JIRA.IssueType";
 	public static final String PROPERTY_JIRA_FEATURE_QUERY = "Feature.JIRA.Query";
 	
 	// singleton
@@ -65,8 +65,8 @@ public class JiraIssueStore implements Closeable  {
 		this.open();
 		
 		// set the defaults
-		Setting.Default.get(PROPERTY_JIRA_PROJECTID, JIRA_PROJECTID);
-		Setting.Default.get(PROPERTY_JIRA_TYPE, JIRA_TYPE);
+		Setting.Default.get(PROPERTY_JIRA_FEATURE_PROJECTID, JIRA_FEATURE_PROJECTID);
+		Setting.Default.get(PROPERTY_JIRA_FEATURE_TYPE, JIRA_FEATURE_TYPE);
 		Setting.Default.get(PROPERTY_JIRA_FEATURE_QUERY, JIRA_FEATURE_QUERY);
 	}
 	/**
@@ -112,7 +112,7 @@ public class JiraIssueStore implements Closeable  {
 	 * @return Feature added or null
 	 */
 	protected JiraIssueFeature add(Issue issue){
-		JiraIssueFeature aFeature = null;
+		JiraIssueFeature aFeature = (JiraIssueFeature) this.issues.get(issue.getKey());
 		aFeature = (JiraIssueFeature) this.getLoader().convertToIssueFeature(issue, aFeature);
 		return addFeature(aFeature, true);
 	}
@@ -337,6 +337,7 @@ public class JiraIssueStore implements Closeable  {
 			aQueryFeature.setLockMode(LockModeType.NONE);
 	        List<JiraIssueFeature> theFeatureResults = aQueryFeature.getResultList();
 	        for (JiraIssueFeature f : theFeatureResults) {
+	        	f.setLoaded();
 	        	this.addFeature(f, false);
 	        }
 		} catch (Exception e) {

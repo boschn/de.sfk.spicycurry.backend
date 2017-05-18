@@ -355,6 +355,7 @@ public class RequirementStore implements Closeable {
 				@SuppressWarnings("unchecked")
 				List<Requirement> theRequirementResults = aQueryRequirement.getResultList();
 			    for (Requirement r : theRequirementResults) {
+			    		r.setLoaded();
 			        	this.add(r, false);
 			        	i++;
 			        	if (i % 1000 == 0) System.out.print(".");

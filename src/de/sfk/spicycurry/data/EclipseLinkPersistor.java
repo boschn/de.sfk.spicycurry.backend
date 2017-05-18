@@ -94,4 +94,6 @@ public class EclipseLinkPersistor extends AbstractPersistor implements IPersisto
 		return this.logger;
 	}
 
+	
+
 }

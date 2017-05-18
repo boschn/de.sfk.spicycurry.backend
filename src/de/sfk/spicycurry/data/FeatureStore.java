@@ -319,6 +319,7 @@ public class FeatureStore implements Closeable {
 				aQueryFeature.setLockMode(LockModeType.NONE);
 		        List<Feature> theFeatureResults = aQueryFeature.getResultList();
 		        for (Feature f : theFeatureResults) {
+		        	f.setLoaded();
 		        	this.add(f, false);
 		        }
 			} catch (Exception e) {
