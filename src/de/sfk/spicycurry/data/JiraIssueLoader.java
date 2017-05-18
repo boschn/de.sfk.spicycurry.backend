@@ -121,11 +121,11 @@ public class JiraIssueLoader implements Closeable {
 					
 					logger.info("query '" + query + "' will return " + no + " issues.");
 					System.out.println();
-					
+					int chunk = 100;
 					// load with width 50
-					for (int at=0; at < no; at+=50){
+					for (int at=0; at < no; at+=chunk){
 						List<Issue> theResult;
-						theResult = client.searchIssues(query,null,null, no+50,at).issues;
+						theResult = client.searchIssues(query,"*all",null, chunk,at).issues;
 						
 						// add them
 						for (Issue anIssue: theResult){
