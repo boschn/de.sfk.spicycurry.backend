@@ -233,9 +233,9 @@ public class CmdLine {
 
 		// command server mode
 		Option commandServerMode = Option.builder(CmdLine.cmdServer)
-			    .longOpt( "server mode" )
+			    .longOpt( "server" )
 			    .required(false)
-			    .desc( "automatically start in server mode"  )
+			    .desc( "automatically start in server mode with integrated db server"  )
 			    .type(String.class)
 			    .required(false)
 			    .build();
