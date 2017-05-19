@@ -97,10 +97,10 @@ public class JiraIssueFeature extends JiraIssue {
 	 * @param persistor
 	 */
 	public JiraIssueFeature() {
-		super(Globals.Persistor);
+		super(JiraIssueStore.db.getPersistor());
 	}
 	public JiraIssueFeature(String Id) {
-		super(Globals.Persistor);
+		super(JiraIssueStore.db.getPersistor());
 		setId(Id);
 	}
 	public JiraIssueFeature(String Id, IPersistor persistor) {

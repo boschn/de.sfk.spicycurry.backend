@@ -31,7 +31,7 @@ import de.sfk.spicycurry.Setting;
  * 
  * use load to load it initially from Polarion
  */
-public class RequirementStore implements Closeable {
+public class RequirementStore implements Closeable, IStore<Requirement> {
 
 		private static final String POLARION_PROJECTID = "1010";
 		private static final String POLARION_TYPE = "ple";
@@ -41,16 +41,19 @@ public class RequirementStore implements Closeable {
 		public static final String PROPERTY_POLARION_REQUIREMENT_QUERY = "Requirement.Polarion.Query";
 		
 		// class
-		public static RequirementStore db = new RequirementStore();
+		public final static RequirementStore db = new RequirementStore();
 	
+		// 
+		private boolean isInitialized = false;
 		// store
 		private ConcurrentHashMap<String, Requirement> requirements = new ConcurrentHashMap<String,Requirement>(); // byId
 		private ConcurrentHashMap<String, Requirement> requirementsByUri = new ConcurrentHashMap<String, Requirement>(); //byURI
-		private IPersistor persistor = Globals.Persistor;
+		
+		// persistor
+		private IPersistor persistor = null; // lazy
 		
 		// polarion helpers
 		private PolarionWorkItemLoader loader = null;
-			
 
 		// Logger
 		private Logger logger = LogManager.getLogger(RequirementStore.class);
@@ -58,11 +61,9 @@ public class RequirementStore implements Closeable {
 		/**
 		 * constructor
 		 */
-		public RequirementStore() {
+		protected RequirementStore() {
 			super();
 			
-			// open persistence
-			this.open();
 			
 			// set the defaults
 			Setting.Default.get(PROPERTY_POLARION_PROJECTID, POLARION_PROJECTID);
@@ -77,6 +78,18 @@ public class RequirementStore implements Closeable {
 			return getPolarionLoader(PolarionParameter.Default.getBaseUrl(), 
 							 PolarionParameter.Default.getUserName(),
 							 PolarionParameter.Default.getPassWord());
+		}
+		/**
+		 * @return the isInitialized
+		 */
+		public synchronized boolean isInitialized() {
+			return isInitialized;
+		}
+		/**
+		 * @param isInitialized the isInitialized to set
+		 */
+		private synchronized void setInitialized(boolean isInitialized) {
+			this.isInitialized = isInitialized;
 		}
 		/**
 		 * return the work item loader associated with the store or create one
@@ -99,6 +112,19 @@ public class RequirementStore implements Closeable {
 			}
 		}
 		/**
+		 * @return the persistor
+		 */
+		public synchronized IPersistor getPersistor() {
+			if (persistor==null) persistor = new EclipseLinkPersistor("RequirementStore");
+			return persistor;
+		}
+		/**
+		 * @param persistor the persistor to set
+		 */
+		public synchronized void setPersistor(IPersistor persistor) {
+			this.persistor = persistor;
+		}
+		/**
 		 * @param loader the loader to set
 		 */
 		@SuppressWarnings("unused")
@@ -112,6 +138,9 @@ public class RequirementStore implements Closeable {
 		 * @return Feature added or null
 		 */
 		protected Requirement add(WorkItem item, boolean force){
+			// open persistence
+			if (!this.isInitialized()) this.open();
+
 			Requirement aRequirement = null;			
 			if (this.hasUri(item.getUri())) aRequirement = this.getByUri(item.getUri());
 			aRequirement = this.getLoader().convertToRequirement(item, aRequirement);
@@ -348,19 +377,20 @@ public class RequirementStore implements Closeable {
 		private synchronized void open() {
 			try {
 
-				long i =0;
-				Query aQueryRequirement =
-						persistor.getEm().createQuery("select r from Requirement r");
-				aQueryRequirement.setLockMode(LockModeType.NONE);
-				@SuppressWarnings("unchecked")
-				List<Requirement> theRequirementResults = aQueryRequirement.getResultList();
-			    for (Requirement r : theRequirementResults) {
-			    		r.setLoaded();
-			        	this.add(r, false);
-			        	i++;
-			        	if (i % 1000 == 0) System.out.print(".");
-			    }
-			     System.out.println();
+					long i =0;
+					Query aQueryRequirement =
+							getPersistor().getEm().createQuery("select r from Requirement r");
+					aQueryRequirement.setLockMode(LockModeType.NONE);
+					@SuppressWarnings("unchecked")
+					List<Requirement> theRequirementResults = aQueryRequirement.getResultList();
+				    for (Requirement r : theRequirementResults) {
+				    		r.setLoaded();
+				        	requirements.put(r.getId(), r);
+				        	requirementsByUri.put(r.getPolarionUri(), r);
+				        	i++;
+				    }
+				    this.setInitialized(true);
+				    
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					 logger.info(e.getLocalizedMessage());
