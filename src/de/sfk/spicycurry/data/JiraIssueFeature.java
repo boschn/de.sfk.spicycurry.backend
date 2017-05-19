@@ -293,6 +293,7 @@ public class JiraIssueFeature extends JiraIssue {
 	 */
 	public String getFeatureId() {
 		if (this.getFeature()!= null) return this.getFeature().getId();
+		else if(this.featureId != null) return this.featureId;
 		else return null;
 	}
 	public void setFeatureId(String id) {

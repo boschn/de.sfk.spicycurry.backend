@@ -289,9 +289,9 @@ public class JiraIssueStore implements Closeable, IStore<JiraIssue>  {
 	{
 		if (!isInitialized()) this.open();
 		
-		return loadFeatures(PolarionParameter.Default.getBaseUrl(), 
-				    PolarionParameter.Default.getUserName(),
-				    PolarionParameter.Default.getPassWord(),
+		return loadFeatures(JiraParameter.Default.getBaseUrl(), 
+				JiraParameter.Default.getUserName(),
+				JiraParameter.Default.getPassWord(),
 				    id, null);
 	}
 	/**
@@ -319,12 +319,11 @@ public class JiraIssueStore implements Closeable, IStore<JiraIssue>  {
 			// load by KA-WI-ID
 			if (key !=null) aQry = aQry + " AND key="+ key ;
 			if (changeDate != null) {
-				SimpleDateFormat aFormatter = new SimpleDateFormat("yyyyMMdd");
-				aQry = aQry + " AND updated:[" + aFormatter.format(Date.from((Instant) changeDate)) + " TO 30000000]";
+				SimpleDateFormat aFormatter = new SimpleDateFormat("yyyy-MM-dd");
+				aQry = aQry + " AND updated>='" + aFormatter.format(Date.from((Instant) changeDate)) + "'";
 			}
 			// run the query 
 			aList =  aLoader.getIssuesByQuery(aQry);
-			logger.info("from jira " + aList.length + " uris retrieved for qry " );
 			
 			// fill
 			for(Issue anIssue: aList)
@@ -336,7 +335,6 @@ public class JiraIssueStore implements Closeable, IStore<JiraIssue>  {
 						try {
 							aFeature.persist();
 							i++;
-							if (i % 100 == 0) System.out.print('.');
 							
 						} catch (Exception e) {
 							logger.debug(e.getMessage());
@@ -350,8 +348,8 @@ public class JiraIssueStore implements Closeable, IStore<JiraIssue>  {
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logger.error(e.getMessage(), e);
+			logger.error(e.getLocalizedMessage());
+			if (logger.isDebugEnabled()) logger.catching(e);
 		}
 		
 		// rollback & close  
@@ -369,14 +367,17 @@ public class JiraIssueStore implements Closeable, IStore<JiraIssue>  {
 	 * open persistence
 	 */
 	private synchronized void open() {
-
+		ArrayList<JiraIssueFeature> bucket;
+		
 		try {
 		Query aQueryFeature =
 				getPersistor().getEm().createQuery("select f from JiraIssueFeature f");
 			aQueryFeature.setLockMode(LockModeType.NONE);
 	        List<JiraIssueFeature> theFeatureResults = aQueryFeature.getResultList();
 	        for (JiraIssueFeature f : theFeatureResults) {
-	        	ArrayList<JiraIssueFeature> bucket;
+	        	f.setLoaded(); // set loaded
+	        	issues.put(f.getId(), f); // also add to issues
+	        	// add to features by feature id
 	        	if (!featuresById.containsKey(f.getFeatureId())) bucket = new ArrayList<JiraIssueFeature>() ;
 	        	else bucket = featuresById.get(f.getFeatureId());
 	        	featuresById.put(f.getFeatureId(), bucket);
@@ -384,11 +385,11 @@ public class JiraIssueStore implements Closeable, IStore<JiraIssue>  {
 	        this.setInitialized(true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			 logger.info(e.getLocalizedMessage());
+			 logger.info(e.getMessage());
 			 return;
 		} 
 	        
-	    logger.info("JiraIssueStore has retrieved " + issues.size() + " entries from persistence");
+	    logger.info("JiraIssueStore has retrieved " + featuresById.size() + " feature issues from persistence");
 	}
 	/**
 	 * get the set of keys

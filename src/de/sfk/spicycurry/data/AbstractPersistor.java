@@ -143,7 +143,7 @@ public abstract class AbstractPersistor implements IPersistor {
 	}
 	@Override
 	public synchronized void commit(EntityTransaction t) {
-		if (entityManager != null)
+		if (entityManager != null && t != null)
 			t.commit();
 		else if (this.getLogger() != null && this.getLogger().isDebugEnabled()) 
 						this.getLogger().debug(getId() + " " +"em is null");

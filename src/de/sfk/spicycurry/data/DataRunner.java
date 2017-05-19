@@ -35,7 +35,7 @@ public class DataRunner {
 			String url = Setting.Default.get(JiraParameter.PROPERTY_JIRA_BASEURL, "https://jira3.technisat-digital.de");
 			String name = Setting.Default.get(JiraParameter.PROPERTY_JIRA_USERNAME, "boris.schneider");
 			String password = Setting.Default.get(JiraParameter.PROPERTY_JIRA_PASSWORD, "Carconnect1!");
-			JiraIssueStore.db.loadAllFeatures();
+			JiraIssueStore.db.loadJira("MIBSERIELH-4426");
 			
 			// save properties
 			Setting.Default.write(true);

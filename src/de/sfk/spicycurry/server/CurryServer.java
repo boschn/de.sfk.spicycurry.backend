@@ -76,10 +76,10 @@ public class CurryServer extends Thread {
         
         // default chores
         if (chores.count()<4){
-        	// chores.add(new Chore((long) 110 ,"feed features from jira", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "jira" }), true);
+        	chores.add(new Chore((long) 110 ,"feed features from jira", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "jira" }), true);
         	chores.add(new Chore((long) 120,"feed features from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Feature.class.getName(), "polarion" }), true);
-        	//chores.add(new Chore((long) 200,"feed requirement from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Requirement.class.getName(), "polarion" }), true);
-        	//chores.add(new Chore((long) 300,"feed specifications from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Specification.class.getName(), "polarion" }), true);
+        	chores.add(new Chore((long) 200,"feed requirement from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Requirement.class.getName(), "polarion" }), true);
+        	chores.add(new Chore((long) 300,"feed specifications from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Specification.class.getName(), "polarion" }), true);
         }
         
     	// load all Features

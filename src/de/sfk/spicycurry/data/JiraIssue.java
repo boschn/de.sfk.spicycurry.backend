@@ -33,9 +33,9 @@ import net.rcarz.jiraclient.Status;
  *
  */
 @Entity
-@Table(name="JiraIssues")
-@DiscriminatorColumn(name="JiraIssueType")
-@Inheritance(strategy=InheritanceType.JOINED)
+//@Table(name="JiraIssues")
+//@DiscriminatorColumn(name="JiraIssueType")
+@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
 public abstract class JiraIssue extends Bean {
 	@Transient
 	private static final long serialVersionUID = 1L;

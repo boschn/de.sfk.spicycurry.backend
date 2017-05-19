@@ -67,7 +67,7 @@ public class JiraIssueLoader implements Closeable {
 			/**
 			 * constructor with no beginSession
 			 */
-			public JiraIssueLoader() {
+			public  JiraIssueLoader() {
 				
 			}
 			/**
@@ -82,6 +82,12 @@ public class JiraIssueLoader implements Closeable {
 				beginSession(url, name, password);
 			}
 
+			public static JiraIssueLoader getLoader(){
+				if (singleton == null) singleton = new JiraIssueLoader();
+				return singleton;
+				
+			}
+				
 			/**
 			 * start a jira Session
 			 * 
@@ -91,7 +97,7 @@ public class JiraIssueLoader implements Closeable {
 			 * @throws Exception
 			 */
 			protected void beginSession(String url, String name, String password) throws Exception {
-				
+				if (isInitialized) return;
 				BasicCredentials creds = new BasicCredentials(name, password);
 		        client = new JiraClient(url, creds);
 		        setInitialized(true);
@@ -118,19 +124,13 @@ public class JiraIssueLoader implements Closeable {
 				
 				try {
 					int no = client.countIssues(query);
-					
 					logger.info("query '" + query + "' will return " + no + " issues.");
-					System.out.println();
-					int chunk = 3000;
-					// load with width 50
-					for (int at=0; at < no; at+=chunk){
-						List<Issue> theResult;
-						theResult = client.searchIssues(query,"*all",null, chunk,at).issues;
-						
-						// add them
-						for (Issue anIssue: theResult){
-							theIssues.add(anIssue);
-						}
+					
+					int chunk = 25;
+					List<Issue> theResult = null;
+					for (int at = 0; at < no; at+= chunk){
+						theResult = client.searchIssues(query,"*all,comments",null, chunk, at).issues;
+						theIssues.addAll(theResult);
 						System.out.print(".");
 					}
 					
@@ -252,7 +252,8 @@ public class JiraIssueLoader implements Closeable {
 				
 				// json object of some sort
 				if (input instanceof JSONObject){
-					return Field.getString((JSONObject)input);
+					CustomFieldOption anOption = Field.getResource(CustomFieldOption.class,input,client.getRestClient());
+					return anOption.getValue();
 				}
 				// check if we have a list of CustomFieldOption
 				if (input instanceof JSONArray){

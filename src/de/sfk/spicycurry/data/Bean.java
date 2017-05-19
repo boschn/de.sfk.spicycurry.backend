@@ -3,6 +3,8 @@
  */
 package de.sfk.spicycurry.data;
 
+import java.util.logging.Logger;
+
 import javax.persistence.EntityTransaction;
 import javax.persistence.LockModeType;
 import javax.persistence.MappedSuperclass;
@@ -56,11 +58,19 @@ public class Bean {
 		if (getPersistor() != null) {
 			if (isChanged || isCreated){
 				synchronized (this){
-					EntityTransaction aT = getPersistor().begin();
+					EntityTransaction aT = null;
+					try {
+						 aT = getPersistor().begin();
+					} catch (IllegalStateException e){
+						Logger.getLogger(e.getLocalizedMessage());
+					}
 					//persistor.getEm().lock(this, LockModeType.NONE); -> throws Entity must be managed to call lock: class de.sfk.spicycurry.data.Feature [1010-MIB3-ALG-144542,PMF01], try merging the detached and try the lock again.  
 					if(isCreated) getPersistor().persist(this);
 					else if (isLoaded) getPersistor().update(this);
-					getPersistor().commit(aT);
+					
+					if (aT !=null) 
+						getPersistor().commit(aT);
+					
 					setCreated(false);
 					setChanged(false);
 					setLoaded();
