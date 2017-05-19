@@ -24,7 +24,7 @@ import de.sfk.spicycurry.Setting;
  * 
  * use load to load it initially from Polarion
  */
-public class FeatureStore implements Closeable {
+public class FeatureStore implements Closeable, IStore<Feature> {
 
 		private static final String POLARION_PROJECTID = "1010";
 		private static final String POLARION_TYPE = "ple";
@@ -43,14 +43,17 @@ public class FeatureStore implements Closeable {
 		public static final String PROPERTY_JIRA_FEATURE_QUERY = "Feature.JIRA.Query";
 		
 		// singleton
-		public static FeatureStore db = new FeatureStore();
+		public final static FeatureStore db = new FeatureStore();
 	
 		// store
 		private ConcurrentHashMap<String, Feature> features = new ConcurrentHashMap<String,Feature>();
 		private ConcurrentHashMap<String, Feature> featuresByUri = new ConcurrentHashMap<String, Feature>(); //byURI
-		private IPersistor persistor = Globals.Persistor;
+		
+		// Persistor
+		private IPersistor persistor = null;
 		// polarion helpers
 		private PolarionWorkItemLoader loader = null;
+		private boolean isInitialized = false;
 		
 		// Logger
 		private Logger logger = LogManager.getLogger(FeatureStore.class);
@@ -58,12 +61,10 @@ public class FeatureStore implements Closeable {
 		/**
 		 * constructor
 		 */
-		public FeatureStore() {
+		protected FeatureStore() {
 			super();
 			
-			// open persistence
-			this.open();
-			
+					
 			// set the defaults
 			Setting.Default.get(PROPERTY_POLARION_PROJECTID, POLARION_PROJECTID);
 			Setting.Default.get(PROPERTY_POLARION_TYPE, POLARION_TYPE);
@@ -107,11 +108,26 @@ public class FeatureStore implements Closeable {
 			this.loader = loader;
 		}
 		/**
+		 * @return the persistor
+		 */
+		public synchronized IPersistor getPersistor() {
+			if (persistor==null) persistor = new EclipseLinkPersistor("FeatureStore");
+			return persistor;
+		}
+		/**
+		 * @param persistor the persistor to set
+		 */
+		public synchronized void setPersistor(IPersistor persistor) {
+			this.persistor = persistor;
+		}
+		/**
 		 * adds a work item as feature
 		 * @param item
 		 * @return Feature added or null
 		 */
 		protected Feature add(WorkItem item){
+			if (!isInitialized()) this.open();
+			
 			Feature aFeature = null;
 			
 			if (this.hasUri(item.getUri()))	
@@ -126,6 +142,7 @@ public class FeatureStore implements Closeable {
 		 * @return
 		 */
 		public Feature add(Feature feature, boolean force) {
+			if (!isInitialized()) this.open();
 			if (force || !this.has(feature)) {
 				// will be replaced by put
 				features.put(feature.getId(), feature);
@@ -141,6 +158,7 @@ public class FeatureStore implements Closeable {
 		 */
 		public long count()
 		{
+			if (!isInitialized()) this.open();
 			return features.size();
 		}
 		/**
@@ -149,6 +167,7 @@ public class FeatureStore implements Closeable {
 		 * @return true or false
 		 */
 		public boolean has(Feature feature){
+			if (!isInitialized()) this.open();
 			if (features.containsKey(feature.getId())) return true;
 			return false;
 		}
@@ -159,6 +178,7 @@ public class FeatureStore implements Closeable {
 		 * @return true or false
 		 */
 		public boolean has(String id){
+			if (!isInitialized()) this.open();
 			if (features.containsKey(id)) {
 				return true;
 			}
@@ -170,6 +190,7 @@ public class FeatureStore implements Closeable {
 		 * @return true or false
 		 */
 		public boolean hasUri(String uri){
+			if (!isInitialized()) this.open();
 			if (featuresByUri.containsKey(uri)) {
 				return true;
 			}
@@ -181,6 +202,7 @@ public class FeatureStore implements Closeable {
 		 * @return Feature or null
 		 */
 		public Feature getById(String id){
+			if (!isInitialized()) this.open();
 			if (features.containsKey(id)) {
 				return features.get(id);
 			}
@@ -192,10 +214,23 @@ public class FeatureStore implements Closeable {
 		 * @return Feature or null
 		 */
 		public Feature getByUri(String uri){
+			if (!isInitialized()) this.open();
 			if (featuresByUri.containsKey(uri)) {
 				return featuresByUri.get(uri);
 			}
 			return null;
+		}
+		/**
+		 * @return the isInitialized
+		 */
+		public synchronized boolean isInitialized() {
+			return isInitialized;
+		}
+		/**
+		 * @param isInitialized the isInitialized to set
+		 */
+		private synchronized void setInitialized(boolean isInitialized) {
+			this.isInitialized = isInitialized;
 		}
 		/**
 		 * load - fill the store from Polarion with default values
@@ -244,6 +279,8 @@ public class FeatureStore implements Closeable {
 		 */
 		private boolean loadPolarion(String baseUrl, String userName, String passWord, String id, Temporal changeDate)
 		{
+			if (!isInitialized()) this.open();
+			
 			long i=0;
 			try {
 				PolarionWorkItemLoader aLoader = this.getPolarionLoader(baseUrl, userName, passWord);
@@ -315,13 +352,15 @@ public class FeatureStore implements Closeable {
 
 			try {
 			Query aQueryFeature =
-					persistor.getEm().createQuery("select f from Feature f");
+					getPersistor().getEm().createQuery("select f from Feature f");
 				aQueryFeature.setLockMode(LockModeType.NONE);
 		        List<Feature> theFeatureResults = aQueryFeature.getResultList();
 		        for (Feature f : theFeatureResults) {
 		        	f.setLoaded();
-		        	this.add(f, false);
+		        	features.put(f.getId(), f);
+		        	featuresByUri.put(f.getPolarionUri(),f);
 		        }
+		        this.setInitialized(true);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				 logger.info(e.getLocalizedMessage());
@@ -335,6 +374,7 @@ public class FeatureStore implements Closeable {
 		 * @return
 		 */
 		public Set<String> keySet(){
+			if (!isInitialized()) this.open();
 			return features.keySet();
 		}
 		/**
@@ -342,6 +382,7 @@ public class FeatureStore implements Closeable {
 		 * @return
 		 */
 		public Collection<Feature> all(){
+			if (!isInitialized()) this.open();
 			return features.values();
 		}
 		/** 
@@ -349,6 +390,8 @@ public class FeatureStore implements Closeable {
 		 * @return
 		 */
 		public synchronized boolean  persist(){
+			if (!isInitialized()) this.open();
+			
 			long i = 0;
 			
 			for (Bean aBean: features.values()){

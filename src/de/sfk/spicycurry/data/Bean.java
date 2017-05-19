@@ -16,7 +16,7 @@ import javax.persistence.Transient;
 
 public class Bean {
 	@Transient
-	private IPersistor persistor = null;
+	private IStore store = null;
 	@Transient
 	private boolean isChanged = false;
 	@Transient
@@ -24,33 +24,47 @@ public class Bean {
 	@Transient
 	private boolean isLoaded = false;
 	
-	protected Bean (IPersistor persistor){
-		this.persistor = persistor;
+	/**
+	 * ctor
+	 * @param store
+	 */
+	protected Bean (IStore store){
+		this.store = store;
 		this.isCreated = true;
 	}
+	
 	/*
 	 * return the persistor
 	 */
 	public IPersistor getPersistor(){
-		return persistor;
-	}
-	public void refresh(){
-		if (persistor != null) persistor.refresh(this);
+		return store.getPersistor();
 	}
 	/**
-	 * persist this object
+	 * refresh the bean from persistence
+	 */
+	public void refresh(){
+		if (getPersistor() != null){ 
+			synchronized(this){
+				getPersistor().refresh(this);
+			}
+		}
+	}
+	/**
+	 * persist this object - either create or update
 	 */
 	public void persist(){
-		if (persistor != null) {
+		if (getPersistor() != null) {
 			if (isChanged || isCreated){
-				EntityTransaction aT = persistor.begin();
-				//persistor.getEm().lock(this, LockModeType.NONE); -> throws Entity must be managed to call lock: class de.sfk.spicycurry.data.Feature [1010-MIB3-ALG-144542,PMF01], try merging the detached and try the lock again.  
-				if(isCreated) persistor.persist(this);
-				else if (isLoaded) persistor.update(this);
-				persistor.commit(aT);
-				setCreated(false);
-				setChanged(false);
-				setLoaded();
+				synchronized (this){
+					EntityTransaction aT = getPersistor().begin();
+					//persistor.getEm().lock(this, LockModeType.NONE); -> throws Entity must be managed to call lock: class de.sfk.spicycurry.data.Feature [1010-MIB3-ALG-144542,PMF01], try merging the detached and try the lock again.  
+					if(isCreated) getPersistor().persist(this);
+					else if (isLoaded) getPersistor().update(this);
+					getPersistor().commit(aT);
+					setCreated(false);
+					setChanged(false);
+					setLoaded();
+				}
 			}
 		}
 	}

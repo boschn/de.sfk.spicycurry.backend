@@ -86,17 +86,22 @@ public class PolarionWorkItemLoader implements Closeable {
 			beginSession(url, name, password);
 		}
 
-		protected synchronized void  beginSession(String url, String name, String password) throws Exception {
-			if (isInitialized) return;
+		protected void  beginSession(String url, String name, String password) throws Exception {
+			
 			
 			try {
-				// setup Web Service
-				if (factory == null) factory = new WebServiceFactory(url);
-				if (sessionService == null) sessionService = factory.getSessionService();
-				if (trackerService == null) trackerService = factory.getTrackerService();
+				synchronized(this){
+					
+					if (isInitialized) return;
+					// setup Web Service
+					if (factory == null) factory = new WebServiceFactory(url);
+					if (sessionService == null) sessionService = factory.getSessionService();
+					if (trackerService == null) trackerService = factory.getTrackerService();
 				
-				sessionService.logIn(name, password);
-				this.isInitialized = true;
+					sessionService.logIn(name, password);
+					this.isInitialized = true;
+				}
+				
 				logger.info("Session with '" + url + "started");
 			
 			} catch (MalformedURLException me) {

@@ -61,14 +61,14 @@ public class Feature extends Bean implements Serializable, Visitable {
 	 * constructor
 	 */
 	public Feature() {
-		super(Globals.Persistor);
+		super(FeatureStore.db);
 	}
 	public Feature(String id) {
-		super(Globals.Persistor);
+		super(FeatureStore.db);
 		this.id = id;
 	}
 	public Feature(Requirement requirement) {
-		super(Globals.Persistor);
+		super(FeatureStore.db);
 		this.id = requirement.getCustomerRequirementId(); // KA-WI-ID is the requirement
 		this.setRequirement	(requirement);
 	}

@@ -19,9 +19,11 @@ import org.apache.logging.log4j.Logger;
 import de.sfk.spicycurry.CmdLine;
 import de.sfk.spicycurry.CurryDaemon;
 import de.sfk.spicycurry.Globals;
+import de.sfk.spicycurry.data.EclipseLinkPersistor;
 import de.sfk.spicycurry.data.Feature;
 import de.sfk.spicycurry.data.FeatureStore;
 import de.sfk.spicycurry.data.IPersistor;
+import de.sfk.spicycurry.data.IStore;
 import de.sfk.spicycurry.data.Requirement;
 import de.sfk.spicycurry.data.RequirementStore;
 import de.sfk.spicycurry.data.Specification;
@@ -35,11 +37,8 @@ import de.sfk.spicycurry.data.SpecificationStore;
 public class CurryServer extends Thread {
 	
     private boolean isDaemon = false;
+    private ChoreStore chores = ChoreStore.db;
     
-    // store of chores
- 	private List<Chore> chores = new ArrayList<Chore>();
-	private IPersistor persistor = Globals.Persistor;
-	
 	// logger
 	private static Logger logger = LogManager.getLogger(CurryDaemon.class);
 
@@ -55,39 +54,17 @@ public class CurryServer extends Thread {
 	/**
 	 * @return the chores
 	 */
-	public List<Chore> getChores() {
-		return chores;
+	public Collection<Chore> getChores() {
+		return chores.all();
 	}
-	/**
-	 * @param chores the chores to set
-	 */
-	public void setChores(List<Chore> chores) {
-		this.chores = chores;
-	}
+	
     @Override
     public synchronized void start() {
         this.setDaemon(isDaemon);
         // CmdLine.startEmbeddedDBServer(cmd); -> should be started
         super.start();
     }
-    /**
-	 * load the chores
-	 */
-	private void loadChores() {
-
-		try {
-			Query aQueryChores =
-					persistor.getEm().createQuery("select f from ServerChores f");
-			
-			chores = aQueryChores.getResultList();
-	        
-		} catch (Exception e) {
-			 logger.info(e.getLocalizedMessage());
-			 return;
-		} 
-	        
-	    logger.info(chores.size() + " chore entries loaded");
-	}
+   
     /**
      * initialize the server
      * @return true if successfull
@@ -97,14 +74,12 @@ public class CurryServer extends Thread {
     	//final String orgName = Thread.currentThread().getName();
         Thread.currentThread().setName("CurryServer");
         
-        // load the chores
-        this.loadChores();
         // default chores
-        if (chores.size()<=3){
-        	chores.add(new Chore((long) 110,"feed features from jira", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "jira" }));
-        	chores.add(new Chore((long) 120,"feed features from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Feature.class.getName(), "polarion" }));
-        	chores.add(new Chore((long) 200,"feed requirement from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Requirement.class.getName(), "polarion" }));
-        	chores.add(new Chore((long) 300,"feed specifications from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Specification.class.getName(), "polarion" }));
+        if (chores.count()<4){
+        	// chores.add(new Chore((long) 110 ,"feed features from jira", Chore.JobType.Update, Duration.ofHours(1), new String[] { Feature.class.getName(), "jira" }), true);
+        	chores.add(new Chore((long) 120,"feed features from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Feature.class.getName(), "polarion" }), true);
+        	//chores.add(new Chore((long) 200,"feed requirement from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Requirement.class.getName(), "polarion" }), true);
+        	//chores.add(new Chore((long) 300,"feed specifications from polarion", Chore.JobType.Update, Duration.ofHours(4), new String[] { Specification.class.getName(), "polarion" }), true);
         }
         
     	// load all Features
@@ -116,6 +91,7 @@ public class CurryServer extends Thread {
     	// load all Specifications
     	Collection<Specification> theSpecifications = SpecificationStore.db.all();
     	if (logger.isDebugEnabled()) logger.debug(theSpecifications.size() + " specifications read from store");
+    	
     	
     	return true;
     }
@@ -141,7 +117,7 @@ public class CurryServer extends Thread {
     			 Instant changeDate = Instant.now();
     			 	
     			 // run the chores
-    			 for(Chore aChore: chores){
+    			 for(Chore aChore: chores.all()){
     				// skip if the chore is running
     				if (!aChore.isRunning())
     					

@@ -27,8 +27,11 @@ import org.apache.logging.log4j.Logger;
 import de.sfk.spicycurry.CurryDaemon;
 import de.sfk.spicycurry.Globals;
 import de.sfk.spicycurry.data.Bean;
+import de.sfk.spicycurry.data.EclipseLinkPersistor;
 import de.sfk.spicycurry.data.Feature;
 import de.sfk.spicycurry.data.FeatureStore;
+import de.sfk.spicycurry.data.IPersistor;
+import de.sfk.spicycurry.data.IStore;
 import de.sfk.spicycurry.data.JiraIssueStore;
 import de.sfk.spicycurry.data.Requirement;
 import de.sfk.spicycurry.data.RequirementStore;
@@ -114,7 +117,7 @@ public class Chore extends Bean{
 	 */
 	public Chore()
 	{
-		super(Globals.Persistor);
+		super(ChoreStore.db);
 	}
 	/**
 	 * ctor
@@ -124,7 +127,7 @@ public class Chore extends Bean{
 	 * @param intervallPeriod
 	 */
 	public Chore(Long id, String description, JobType job, Duration intervallPeriod, String args[] ) {
-		super(Globals.Persistor);
+		super(ChoreStore.db);
 		this.Id = id;
 		this.description = description;
 		this.job = job;

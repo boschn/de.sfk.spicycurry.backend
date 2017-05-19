@@ -30,7 +30,7 @@ import net.rcarz.jiraclient.Issue;
  * @author boris.schneider
  *
  */
-public class JiraIssueStore implements Closeable  {
+public class JiraIssueStore implements Closeable, IStore<JiraIssue>  {
 
 	private static final String JIRA_FEATURE_PROJECTID = "MIBSERIELH";
 	private static final String JIRA_FEATURE_TYPE = "Feature";
@@ -41,29 +41,25 @@ public class JiraIssueStore implements Closeable  {
 	public static final String PROPERTY_JIRA_FEATURE_QUERY = "Feature.JIRA.Query";
 	
 	// singleton
-	public static JiraIssueStore db = new JiraIssueStore();
+	public final static JiraIssueStore db = new JiraIssueStore();
 
 	// general issue store
 	private ConcurrentHashMap<String, JiraIssue> issues = new ConcurrentHashMap<String,JiraIssue>();
 	// specific store by feature-id (since this is 1:m use bucket)
 	private ConcurrentHashMap<String, ArrayList<JiraIssueFeature>> featuresById = new ConcurrentHashMap<String, ArrayList<JiraIssueFeature>>(); //byURI
 	// Persistor
-	private IPersistor persistor = Globals.Persistor;
+	private IPersistor persistor = null;
 	//  helpers
 	private JiraIssueLoader loader = null;
-	
+	private boolean isInitialized = false;
 	// Logger
 	private Logger logger = LogManager.getLogger(JiraIssueStore.class);
 			
 	/**
 	 * constructor
 	 */
-	public JiraIssueStore() {
+	protected JiraIssueStore() {
 		super();
-		
-		// open persistence
-		this.open();
-		
 		// set the defaults
 		Setting.Default.get(PROPERTY_JIRA_FEATURE_PROJECTID, JIRA_FEATURE_PROJECTID);
 		Setting.Default.get(PROPERTY_JIRA_FEATURE_TYPE, JIRA_FEATURE_TYPE);
@@ -107,11 +103,38 @@ public class JiraIssueStore implements Closeable  {
 		this.loader = loader;
 	}
 	/**
+	 * @return the persistor
+	 */
+	public synchronized IPersistor getPersistor() {
+		if (persistor==null) persistor = new EclipseLinkPersistor("JiraIssueStore");
+		return persistor;
+	}
+	/**
+	 * @param persistor the persistor to set
+	 */
+	public synchronized void setPersistor(IPersistor persistor) {
+		this.persistor = persistor;
+	}
+	/**
+	 * @return the isInitialized
+	 */
+	public synchronized boolean isInitialized() {
+		return isInitialized;
+	}
+	/**
+	 * @param isInitialized the isInitialized to set
+	 */
+	private synchronized void setInitialized(boolean isInitialized) {
+		this.isInitialized = isInitialized;
+	}
+	/**
 	 * adds a jira issue as feature issue
 	 * @param issue
 	 * @return Feature added or null
 	 */
-	protected JiraIssueFeature add(Issue issue){
+	public JiraIssueFeature add(Issue issue, boolean force){
+		if (!isInitialized()) this.open();
+		
 		JiraIssueFeature aFeature = (JiraIssueFeature) this.issues.get(issue.getKey());
 		aFeature = (JiraIssueFeature) this.getLoader().convertToIssueFeature(issue, aFeature);
 		return addFeature(aFeature, true);
@@ -123,6 +146,8 @@ public class JiraIssueStore implements Closeable  {
 	 * @return
 	 */
 	public JiraIssueFeature addFeature(JiraIssueFeature feature, boolean force) {
+		if (!isInitialized()) this.open();
+		
 		if (force || !this.has(feature)) {
 			// save the issue
 			issues.put(feature.getId(), feature);
@@ -147,6 +172,7 @@ public class JiraIssueStore implements Closeable  {
 	 */
 	public long count()
 	{
+		if (!isInitialized()) this.open();
 		return issues.size();
 	}
 	/**
@@ -155,6 +181,7 @@ public class JiraIssueStore implements Closeable  {
 	 */
 	public long countFeatures()
 	{
+		if (!isInitialized()) this.open();
 		return featuresById.size();
 	}
 	/**
@@ -163,6 +190,7 @@ public class JiraIssueStore implements Closeable  {
 	 * @return true or false
 	 */
 	public boolean has(JiraIssue issue){
+		if (!isInitialized()) this.open();
 		if (issues.containsKey(issue.getId())) return true;
 		return false;
 	}
@@ -173,6 +201,7 @@ public class JiraIssueStore implements Closeable  {
 	 * @return true or false
 	 */
 	public boolean has(JiraIssueFeature feature){
+		if (!isInitialized()) this.open();
 		if (featuresById.containsKey(feature.getId())) return true;
 		return false;
 	}
@@ -183,6 +212,7 @@ public class JiraIssueStore implements Closeable  {
 	 * @return true or false
 	 */
 	public boolean has(String id){
+		if (!isInitialized()) this.open();
 		if (issues.containsKey(id)) {
 			return true;
 		}
@@ -194,6 +224,7 @@ public class JiraIssueStore implements Closeable  {
 	 * @return true or false
 	 */
 	public boolean hasFeatureId(String FeatureId){
+		if (!isInitialized()) this.open();
 		if (featuresById.containsKey(FeatureId)) {
 			return true;
 		}
@@ -205,6 +236,7 @@ public class JiraIssueStore implements Closeable  {
 	 * @return Feature or null
 	 */
 	public JiraIssue getIssueById(String id){
+		if (!isInitialized()) this.open();
 		if (issues.containsKey(id)) {
 			return (JiraIssue) issues.get(id);
 		}
@@ -216,6 +248,7 @@ public class JiraIssueStore implements Closeable  {
 	 * @return Feature or null
 	 */
 	public ArrayList<JiraIssueFeature> getByFeatureId(String Id){
+		if (!isInitialized()) this.open();
 		if (hasFeatureId(Id)) {
 			return featuresById.get(Id);
 		}
@@ -227,6 +260,8 @@ public class JiraIssueStore implements Closeable  {
 	 */
 	public boolean loadAllFeatures()
 	{
+		
+		
 		return loadFeatures(JiraParameter.Default.getBaseUrl(), 
 				JiraParameter.Default.getUserName(),
 				JiraParameter.Default.getPassWord(),
@@ -252,6 +287,8 @@ public class JiraIssueStore implements Closeable  {
 	 */
 	public boolean loadJira(String id)
 	{
+		if (!isInitialized()) this.open();
+		
 		return loadFeatures(PolarionParameter.Default.getBaseUrl(), 
 				    PolarionParameter.Default.getUserName(),
 				    PolarionParameter.Default.getPassWord(),
@@ -268,6 +305,8 @@ public class JiraIssueStore implements Closeable  {
 	 */
 	private boolean loadFeatures(String baseUrl, String userName, String passWord, String key, Temporal changeDate)
 	{
+		if (!isInitialized()) this.open();
+		
 		long i=0;
 		try {
 			JiraIssueLoader aLoader = this.getIssueLoader(baseUrl, userName, passWord);
@@ -292,7 +331,7 @@ public class JiraIssueStore implements Closeable  {
 			{
 				// convert to requirement
 				
-					JiraIssueFeature aFeature = 	this.add(anIssue);
+					JiraIssueFeature aFeature = this.add(anIssue, true);
 					if (aFeature != null) {
 						try {
 							aFeature.persist();
@@ -333,13 +372,16 @@ public class JiraIssueStore implements Closeable  {
 
 		try {
 		Query aQueryFeature =
-				persistor.getEm().createQuery("select f from JiraIssueFeature f");
+				getPersistor().getEm().createQuery("select f from JiraIssueFeature f");
 			aQueryFeature.setLockMode(LockModeType.NONE);
 	        List<JiraIssueFeature> theFeatureResults = aQueryFeature.getResultList();
 	        for (JiraIssueFeature f : theFeatureResults) {
-	        	f.setLoaded();
-	        	this.addFeature(f, false);
+	        	ArrayList<JiraIssueFeature> bucket;
+	        	if (!featuresById.containsKey(f.getFeatureId())) bucket = new ArrayList<JiraIssueFeature>() ;
+	        	else bucket = featuresById.get(f.getFeatureId());
+	        	featuresById.put(f.getFeatureId(), bucket);
 	        }
+	        this.setInitialized(true);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			 logger.info(e.getLocalizedMessage());
@@ -353,6 +395,8 @@ public class JiraIssueStore implements Closeable  {
 	 * @return
 	 */
 	public Set<String> keySet(){
+		if (!isInitialized()) this.open();
+		
 		return issues.keySet();
 	}
 	/**
@@ -360,6 +404,8 @@ public class JiraIssueStore implements Closeable  {
 	 * @return
 	 */
 	public Collection<JiraIssue> all(){
+		if (!isInitialized()) this.open();
+		
 		return issues.values();
 	}
 	/** 
@@ -367,6 +413,8 @@ public class JiraIssueStore implements Closeable  {
 	 * @return
 	 */
 	public synchronized boolean  persist(){
+		if (!isInitialized()) this.open();
+		
 		long i = 0;
 		
 		for (Bean aBean: issues.values()){
@@ -388,6 +436,23 @@ public class JiraIssueStore implements Closeable  {
 		}
 		logger.info(i + " issues persisted");
 		return true;
+	}
+	
+	@Override
+	public JiraIssue getById(String id) {
+		if (!isInitialized()) this.open();
+		return issues.get(id);
+	}
+
+	public ArrayList<JiraIssueFeature> getFeaturesById(String id) {
+		if (!isInitialized()) this.open();
+		return featuresById.get(id);
+	}
+	@Override
+	public JiraIssue add(JiraIssue o, boolean force) {
+		if (!isInitialized()) this.open();
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

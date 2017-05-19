@@ -91,18 +91,18 @@ public abstract class JiraIssue extends Bean {
 	 * @param persistor
 	 */
 	public JiraIssue() {
-		super(Globals.Persistor);
+		super(JiraIssueStore.db);
 	}
 	public JiraIssue(String Id) {
-		super(Globals.Persistor);
+		super(JiraIssueStore.db);
 		setId(Id);
 	}
 	public JiraIssue(String Id, IPersistor persistor) {
-		super(persistor);
+		super(JiraIssueStore.db);
 		setId(Id);
 	}
 	protected JiraIssue(IPersistor persistor) {
-		super(persistor);
+		super(JiraIssueStore.db);
 		
 	}
 	/**

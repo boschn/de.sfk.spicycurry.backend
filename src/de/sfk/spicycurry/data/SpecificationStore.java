@@ -33,7 +33,7 @@ import de.sfk.spicycurry.Setting;
  * @author boris.schneider
  *
  */
-public class SpecificationStore implements Closeable {
+public class SpecificationStore implements Closeable, IStore<Specification> {
 
 	private static final String POLARION_PROJECTID = "1011";
 	private static final String POLARION_TYPE = "requirement";
@@ -43,39 +43,34 @@ public class SpecificationStore implements Closeable {
 	public static final String PROPERTY_POLARION_TYPE = "Specification.Polarion.WorkItemType";
 	public static final String PROPERTY_POLARION_Specification_QUERY = "Specification.Polarion.Query";
 	
-	// class singleton
-	public static SpecificationStore db = new SpecificationStore();
-
 	// store
 	private ConcurrentHashMap<String, Specification> specifications = new ConcurrentHashMap<String,Specification>(); // byId
 	private ConcurrentHashMap<String, Specification> specificationsByUri = new ConcurrentHashMap<String, Specification>(); //byURI
-	private IPersistor persistor = Globals.Persistor;
-	
+	// persistor
+	private IPersistor persistor;
+	private boolean isInitialized = false;
 	// polarion helpers
 	private PolarionWorkItemLoader loader = null;
-		
-
+	// class singleton
+	public static final SpecificationStore db = new SpecificationStore();
 	// Logger
 	private Logger logger = LogManager.getLogger(SpecificationStore.class);
 	
 	/**
 	 * constructor
 	 */
-	public SpecificationStore() {
+	protected SpecificationStore() {
 		super();
-		
-		// open persistence
-		this.open();
 		
 		// set the defaults
 		Setting.Default.get(PROPERTY_POLARION_PROJECTID, POLARION_PROJECTID);
 		Setting.Default.get(PROPERTY_POLARION_TYPE, POLARION_TYPE);
 		Setting.Default.get(PROPERTY_POLARION_Specification_QUERY, POLARION_SPECIFICATION_QUERY);
 	}
-	/**
-	 * return the default work item loader
-	 * @return the loader
+	/* (non-Javadoc)
+	 * @see de.sfk.spicycurry.data.IStore#getLoader()
 	 */
+
 	public PolarionWorkItemLoader getLoader() {
 		return getPolarionLoader(PolarionParameter.Default.getBaseUrl(), 
 						 PolarionParameter.Default.getUserName(),
@@ -115,6 +110,7 @@ public class SpecificationStore implements Closeable {
 	 * @return Feature added or null
 	 */
 	protected Specification add(WorkItem item, boolean force){
+		if (!isInitialized()) this.open();
 		Specification aSpecification = null;			
 		if (this.hasUri(item.getUri())) aSpecification = this.getByUri(item.getUri());
 		aSpecification = this.getLoader().convertToSpecification(item, aSpecification);
@@ -126,6 +122,7 @@ public class SpecificationStore implements Closeable {
 	 */
 	public long count()
 	{
+		if (!isInitialized()) this.open();
 		return specifications.size();
 	}
 	/**
@@ -134,6 +131,7 @@ public class SpecificationStore implements Closeable {
 	 * @return
 	 */
 	public Specification add(Specification Specification, boolean force) {
+		if (!isInitialized()) this.open();
 		if (force || !this.has(Specification)) {
 			specifications.put(Specification.getId(), Specification);
 			if (!this.hasUri(Specification))
@@ -148,6 +146,7 @@ public class SpecificationStore implements Closeable {
 	 * @return true or false
 	 */
 	public boolean has(Feature feature){
+		if (!isInitialized()) this.open();
 		if (specifications.containsKey(feature.getId())) return true;
 		return false;
 	}
@@ -157,6 +156,7 @@ public class SpecificationStore implements Closeable {
 	 * @return true or false
 	 */
 	public boolean has(Specification Specification){
+		if (!isInitialized()) this.open();
 		if (specifications.containsKey(Specification.getId())) return true;
 		return false;
 	}
@@ -166,6 +166,7 @@ public class SpecificationStore implements Closeable {
 	 * @return true or false
 	 */
 	public boolean hasUri(Specification Specification){
+		if (!isInitialized()) this.open();
 		if (specificationsByUri.containsKey(Specification.getPolarionUri())) return true;
 		return false;
 	}
@@ -175,6 +176,7 @@ public class SpecificationStore implements Closeable {
 	 * @return true or false
 	 */
 	public boolean hasUri(String uri){
+		if (!isInitialized()) this.open();
 		if (specificationsByUri.containsKey(uri)) return true;
 		return false;
 	}
@@ -184,6 +186,7 @@ public class SpecificationStore implements Closeable {
 	 * @return true or false
 	 */
 	public boolean has(String id){
+		if (!isInitialized()) this.open();
 		if (specifications.containsKey(id)) {
 			return true;
 		}
@@ -195,6 +198,7 @@ public class SpecificationStore implements Closeable {
 	 * @return Feature or null
 	 */
 	public Specification getById(String id){
+		if (!isInitialized()) this.open();
 		if (specifications.containsKey(id)) {
 			return specifications.get(id);
 		}
@@ -207,10 +211,23 @@ public class SpecificationStore implements Closeable {
 	 * @return Feature or null
 	 */
 	public Specification getByUri(String uri){
+		if (!isInitialized()) this.open();
 		if (specificationsByUri.containsKey(uri)) {
 			return specificationsByUri.get(uri);
 		}
 		return null;
+	}
+	/**
+	 * @return the isInitialized
+	 */
+	public synchronized boolean isInitialized() {
+		return isInitialized;
+	}
+	/**
+	 * @param isInitialized the isInitialized to set
+	 */
+	private synchronized void setInitialized(boolean isInitialized) {
+		this.isInitialized = isInitialized;
 	}
 	/**
 	 * load - load the workitem with the standard setting and persist
@@ -261,6 +278,8 @@ public class SpecificationStore implements Closeable {
 	 */
 	private boolean loadPolarion(String baseUrl, String userName, String passWord, String id, Temporal changeDate)
 	{
+		if (!isInitialized()) this.open();
+		
 		long i=0;
 		try {
 			PolarionWorkItemLoader aLoader = this.getPolarionLoader(baseUrl, userName, passWord);
@@ -320,9 +339,8 @@ public class SpecificationStore implements Closeable {
 			return true;
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logger.error(e.getMessage(), e);
+			if (logger.isDebugEnabled()) logger.catching(e);
+			logger.error(e.getMessage());
 		}
 		
 		// rollback & close  
@@ -331,9 +349,10 @@ public class SpecificationStore implements Closeable {
 		return false;
 	}
 
-	/**
-	 * close all sessions
+	/* (non-Javadoc)
+	 * @see de.sfk.spicycurry.data.IStore#close()
 	 */
+	@Override
 	public void close(){
 		loader.close();
 	}
@@ -342,20 +361,22 @@ public class SpecificationStore implements Closeable {
 	 * open persistence
 	 */
 	private synchronized void open() {
+		
 		try {
 
-			long i =0;
+			
 			Query aQuerySpecification =
-					persistor.getEm().createQuery("select r from Specification r");
+					getPersistor().getEm().createQuery("select r from Specification r");
 			aQuerySpecification.setLockMode(LockModeType.NONE);
 			@SuppressWarnings("unchecked")
 			List<Specification> theSpecificationResults = aQuerySpecification.getResultList();
 		    for (Specification r : theSpecificationResults) {
 		    		r.setLoaded();
-		        	this.add(r, false);
-		        	i++;
+		        	specifications.put(r.getId(),r);
+		        	specificationsByUri.put(r.getPolarionUri(), r);
+		        	
 		    }
-		     System.out.println();
+		    this.setInitialized(true);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				 logger.info(e.getLocalizedMessage());
@@ -370,6 +391,8 @@ public class SpecificationStore implements Closeable {
 	 */
 	protected List<Specification> loadPolarionSubSpecifications(Specification nodeSpecification, WorkItem nodeitem)
 	{
+		if (!isInitialized()) this.open();
+		
 		PolarionWorkItemLoader aLoader = this.getLoader();
 		ArrayList<Specification> aList = new ArrayList<Specification>();
 		
@@ -409,6 +432,7 @@ public class SpecificationStore implements Closeable {
 	 */
 	protected List<Specification> getSubSpecifications(Specification nodeSpecification)
 	{
+		if (!isInitialized()) this.open();
 		
 		ArrayList<Specification> aList = new ArrayList<Specification>();
 		
@@ -432,11 +456,12 @@ public class SpecificationStore implements Closeable {
 		return aList;
 	}
 	
-	/**
-	 * get the set of keys
-	 * @return
+	/* (non-Javadoc)
+	 * @see de.sfk.spicycurry.data.IStore#keySet()
 	 */
+	@Override
 	public Set<String> keySet(){
+		if (!isInitialized()) this.open();
 		return specifications.keySet();
 	}
 	/**
@@ -444,14 +469,17 @@ public class SpecificationStore implements Closeable {
 	 * @return
 	 */
 	public Collection<Specification> all(){
+		if (!isInitialized()) this.open();
 		return specifications.values();
 	}
 
-	/** 
-	 * persist them all
-	 * @return
+	/* (non-Javadoc)
+	 * @see de.sfk.spicycurry.data.IStore#persist()
 	 */
+	@Override
 	public synchronized boolean persist(){
+		if (!isInitialized()) this.open();
+		
 		long i = 0;
 		
 		for (Bean aBean: specifications.values()){
@@ -470,4 +498,16 @@ public class SpecificationStore implements Closeable {
 		logger.info(i + " specifications persisted");
 		return true;
 	}
+	/* (non-Javadoc)
+	 * @see de.sfk.spicycurry.data.IStore#getPersistor()
+	 */
+	@Override
+	public IPersistor getPersistor() {
+		
+		
+		if (persistor==null) persistor = new EclipseLinkPersistor("SpecificationStore");
+		return this.persistor;
+	}
+
+	
 }

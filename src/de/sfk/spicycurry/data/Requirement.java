@@ -145,7 +145,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 * constructor
 	 */
 	public Requirement() {
-		super(Globals.Persistor);
+		super(RequirementStore.db);
 	}
 	/**
 	 * constructor
@@ -153,7 +153,7 @@ public class Requirement extends Bean implements Visitable ,Serializable{
 	 */
 	public Requirement(String id)
 	{
-		super(Globals.Persistor);
+		super(RequirementStore.db);
 		this.setId(id);
 		
 	}

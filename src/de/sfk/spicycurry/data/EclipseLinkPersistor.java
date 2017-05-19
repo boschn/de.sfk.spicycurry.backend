@@ -25,35 +25,48 @@ public class EclipseLinkPersistor extends AbstractPersistor implements IPersisto
 
 	// initialize
 	static {
-		Default = new EclipseLinkPersistor();
+		Default = new EclipseLinkPersistor("Default");
 	}
 	// Properties
 	
 	// statics
-	private static final String PERSISTENCE_PROVIDER_DEFAULTNAME = "H2LOCAL";
+	private static final String PROPERTY_PERSISTOR_PROVIDER_NAME = "Persistor.ProviderName";
+	private static final String PERSISTENCE_PROVIDER_DEFAULTNAME = "SpicyCurry";
 	// Logger
-	protected Logger logger = LogManager.getLogger(EclipseLinkPersistor.class);
+	protected static Logger logger = LogManager.getLogger(EclipseLinkPersistor.class);
 	
 	/**
 	 * constructor
 	 */
-	public EclipseLinkPersistor(){
-		super();
-		persistenceProvider =  Setting.Default.get(PROPERTY_PERSISTOR_DATABASE_NAME, PERSISTENCE_PROVIDER_DEFAULTNAME);
+	public EclipseLinkPersistor(String id){
+		super(id);
+		persistenceProvider =  Setting.Default.get(PROPERTY_PERSISTOR_PROVIDER_NAME, PERSISTENCE_PROVIDER_DEFAULTNAME);
 	}
 	
-	public EclipseLinkPersistor(String name) {
-		super();
-		persistenceProvider = name;
+	public EclipseLinkPersistor(String id, String providerName) {
+		super(id);
+		persistenceProvider = providerName;
+	}
+	/**
+	 * create the entityManager factory
+	 * @param persistenceProvider
+	 * @param properties
+	 */
+	private synchronized static void createEMF(String persistenceProvider, Map<String,String> properties){
+		
+		if (properties != null) entityManagerFactory = Persistence.createEntityManagerFactory(persistenceProvider, properties);
+		else entityManagerFactory = Persistence.createEntityManagerFactory(persistenceProvider);
+		
+		logger.info( "entitiyManagerFactor ["+ persistenceProvider+ "]" + " was created");
 	}
 	/* (non-Javadoc)
 	 * @see de.sfk.spicycurry.data.IPersistor#Open()
 	 */
 	@Override
-	public void Open() {
+	public  synchronized void  Open() {
 		// if we started earlier an server to reset properties to reach the own server
 		// maybe that in persistence.xml is something else specified
-		if ((emf == null) || !emf.isOpen()){
+		if ((entityManagerFactory == null) || !entityManagerFactory.isOpen()){
 			if (Globals.DBServer.isServerRunning()){
 				Map<String,String> props = new HashMap<String,String>();
 				// set the correct properties
@@ -62,26 +75,18 @@ public class EclipseLinkPersistor extends AbstractPersistor implements IPersisto
 				props.put(PersistenceUnitProperties.JDBC_USER, Globals.DBServer.getUserId());
 				props.put(PersistenceUnitProperties.JDBC_PASSWORD, Globals.DBServer.getPassWord());
 				props.put(PersistenceUnitProperties.JDBC_DRIVER, Globals.DBServer.getJDBCDriverName());
-
-				emf = Persistence.createEntityManagerFactory(persistenceProvider, props);
 				if (logger.isDebugEnabled()) 
-						logger.info("JDBC settings to local embedded TCP server " + Globals.DBServer.getAddress());
+					logger.info("JDBC settings to local embedded TCP server " + Globals.DBServer.getAddress());
+
+				// create the emf
+				createEMF(persistenceProvider, props);
 				
 			} else {
-				
-				// default entity manager factory by persistence.xml
-				emf = Persistence.createEntityManagerFactory(persistenceProvider);
-				if (logger.isDebugEnabled()) 
-					logger.info("JDBC settings of " + emf);
-	
+				// create the emf
+				createEMF(persistenceProvider, null);
 			}
-
 		}
-		// get the entity manager
-		if ((em == null) || !em.isOpen()) 
-			em = emf.createEntityManager();
 		
-		logger.info(persistenceProvider + " was opened");
 
 	}
 

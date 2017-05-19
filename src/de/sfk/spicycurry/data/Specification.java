@@ -156,7 +156,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 * constructor
 	 */
 	public Specification() {
-		super(Globals.Persistor);
+		super(SpecificationStore.db);
 	}
 	/**
 	 * constructor
@@ -164,7 +164,7 @@ public class Specification extends Bean implements Visitable ,Serializable{
 	 */
 	public Specification(String id)
 	{
-		super(Globals.Persistor);
+		super(SpecificationStore.db);
 		this.setId(id);
 		
 	}

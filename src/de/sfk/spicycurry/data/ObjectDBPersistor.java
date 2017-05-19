@@ -20,7 +20,7 @@ public class ObjectDBPersistor extends AbstractPersistor implements Closeable, I
 	
 	// initialize
 	static {
-			Default = new ObjectDBPersistor();
+			Default = new ObjectDBPersistor("Default");
 	}
 		
 	// statics
@@ -33,15 +33,15 @@ public class ObjectDBPersistor extends AbstractPersistor implements Closeable, I
 	/**
 	 * constructor
 	 */
-	public ObjectDBPersistor(){
-		super();
+	public ObjectDBPersistor(String id){
+		super(id);
 		String name = Setting.Default.get(PROPERTY_PERSISTOR_DATABASE_NAME, PERSISTENCE_PROVIDER_DEFAULTNAME);
 		String path = Setting.Default.get(PROPERTY_PERSISTOR_DATABASE_PATH, PERSISTENCE_PROVIDER_DEFAULTPATH);
 		persistenceProvider = path + name + ".odb";
 	}
 	
-	public ObjectDBPersistor(String path, String name) {
-		super();
+	public ObjectDBPersistor(String id, String path, String name) {
+		super(id);
 		persistenceProvider = path + name + ".odb";
 	}
 
@@ -50,10 +50,10 @@ public class ObjectDBPersistor extends AbstractPersistor implements Closeable, I
 	 */
 	@Override
 	public void Open() {
-		if ((emf == null) || !emf.isOpen()) 
-			emf = Persistence.createEntityManagerFactory(persistenceProvider);
-		if ((em == null) || !em.isOpen()) 
-			em = emf.createEntityManager();
+		if ((entityManagerFactory == null) || !entityManagerFactory.isOpen()) 
+			entityManagerFactory = Persistence.createEntityManagerFactory(persistenceProvider);
+		if ((entityManager == null) || !entityManager.isOpen()) 
+			entityManager = entityManagerFactory.createEntityManager();
 		
 		logger.info(persistenceProvider + " was opened");
 	}
