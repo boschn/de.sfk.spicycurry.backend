@@ -68,7 +68,7 @@ public class JiraIssueFeature extends JiraIssue {
 	@Column(nullable=true, length = 1024)
 	private String schedulingStatus;
 
-	@Column(nullable=true, length = 1024)
+	@Column(nullable=true, columnDefinition ="CLOB")
 	private String schedulingComments;
 	
 	@Column(nullable=true, length = 1014)
